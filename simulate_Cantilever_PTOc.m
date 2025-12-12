@@ -36,7 +36,7 @@ plot_flag = true; % Show plots
 
 % Boundary conditions for cantilever beam
 % Left edge: fixed (both x and y directions)
-% Load: point load at middle of right edge (downward)
+% Load: point load at TOP-RIGHT corner (downward)
 
 % Fixed DOFs: left edge all DOFs
 fixed_dofs = 1:2*(nely+1); % All DOFs of left edge nodes
