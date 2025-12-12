@@ -4,7 +4,7 @@
 %   stress-constrained PTO algorithm.
 %
 %   Mesh: 120 x 60 elements
-%   Boundary conditions: fixed left edge, point load at middle of right edge.
+%   Boundary conditions: fixed left edge, point load at top right corner.
 %
 %   Results are saved to 'Cantilever_PTOs_results.mat' and figures are generated.
 
@@ -37,21 +37,17 @@ TM_init = 0.4 * nelx * nely; % Initial target material (40% volume fraction)
 plot_flag = true; % Show plots
 
 % Boundary conditions for cantilever beam
-% Left edge: fixed (both x and y directions)
-% Load: point load at middle of right edge (downward)
-
-% Fixed DOFs: left edge all DOFs
+% Fixed DOFs
 fixed_dofs = 1:2*(nely+1); % All DOFs of left edge nodes
-
-% Load: point load at middle of right edge (downward)
-mid_right_node = (nelx+1)*(nely+1) - floor(nely/2); % middle of right edge
-load_dof = 2*mid_right_node; % y-direction
+% Load
+top_right_node = (nelx+1)*(nely+1); % top right corner
+load_dof = 2*top_right_node; % y-direction
 load_dofs = load_dof;
 load_vals = -1; % Downward load
 
 fprintf('Mesh: %d x %d elements\n', nelx, nely);
 fprintf('Fixed DOFs: %d (left edge)\n', length(fixed_dofs));
-fprintf('Load at node %d (dof %d) = %.2f\n', mid_right_node, load_dof, load_vals);
+fprintf('Load at node %d (dof %d) = %.2f\n', top_right_node, load_dof, load_vals)
 
 % Run PTOs
 tic;
