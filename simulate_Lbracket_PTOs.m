@@ -89,6 +89,9 @@ history.sigma_max = [];
 history.TM = [];
 history.change = [];
 
+% Start timing
+tic;
+
 % Main iteration loop (simplified from PTOs_main)
 for iter = 1:max_iter
     fprintf('L-bracket PTOs Iteration %d: TM = %.4f\n', iter, TM_init);
@@ -190,6 +193,9 @@ end
 % Final optimized density
 rho_opt = rho;
 
+% Stop timing
+time_elapsed = toc;
+
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y', 'time_elapsed');
 
@@ -231,6 +237,7 @@ sgtitle('L-bracket - PTOs Results');
 saveas(gcf, 'Lbracket_PTOs_results.png');
 
 fprintf('\n=== Simulation Complete ===\n');
+fprintf('Time elapsed: %.2f seconds\n', time_elapsed);
 fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
 fprintf('Final max stress: %.4f\n', max(sigma_vm(:)));
 fprintf('Final compliance: %.4f\n', history.compliance(end));

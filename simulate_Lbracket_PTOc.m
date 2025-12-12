@@ -16,13 +16,13 @@ add_lib(pwd);
 fprintf('=== L-bracket - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
-nelx = 100;      % Number of elements in x-direction
-nely = 40;       % Number of elements in y-direction
+nelx = 50;      % Number of elements in x-direction
+nely = 20;       % Number of elements in y-direction
 dx = 1; dy = 1;  % Element size
 
 % Cutout dimensions (top-left corner)
-cutout_x = 40;   % Width of cutout
-cutout_y = 40;   % Height of cutout
+cutout_x = 20;   % Width of cutout
+cutout_y = 20;   % Height of cutout
 
 % Material properties
 E0 = 1.0;        % Young's modulus of solid
@@ -77,6 +77,9 @@ history.iteration = [];
 history.compliance = [];
 history.volume = [];
 history.change = [];
+
+% Start timing
+tic;
 
 % Main iteration loop
 for iter = 1:max_iter
@@ -164,6 +167,9 @@ end
 % Final optimized density
 rho_opt = rho;
 
+% Stop timing
+time_elapsed = toc;
+
 % Save results
 save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'cutout_x', 'cutout_y', 'time_elapsed');
 
@@ -205,6 +211,7 @@ sgtitle('L-bracket - PTOc Results');
 saveas(gcf, 'Lbracket_PTOc_results.png');
 
 fprintf('\n=== Simulation Complete ===\n');
+fprintf('Time elapsed: %.2f seconds\n', time_elapsed);
 fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
 fprintf('Final compliance: %.4f\n', history.compliance(end));
 fprintf('Results saved to Lbracket_PTOc_results.mat and Lbracket_PTOc_results.png\n');
