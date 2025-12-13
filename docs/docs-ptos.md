@@ -50,7 +50,7 @@ Phương pháp PTOs yêu cầu thiết lập một số nhóm tham số:
 | `load_dofs`    | Bậc tự do chịu tải                             | `load_dofs = [dof_index]` |
 | `load_vals`    | Giá trị tải trọng                              | `load_vals = -1` |
 | `fixed_dofs`   | Bậc tự do bị khóa (điều kiện biên)             | `fixed_dofs = 1:2*(nely+1)` |
-| `sigma_allow`  | Giới hạn ứng suất Von Mises (ràng buộc chính)  | `sigma_allow = 100` |
+| `sigma_allow`  | Giới hạn ứng suất Von Mises (ràng buộc chính)  | `sigma_allow = 1` |
 
 ---
 

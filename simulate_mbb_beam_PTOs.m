@@ -1,8 +1,8 @@
-% SIMULATE_CANTILEVER_BEAM_PTOS Run PTOs on cantilever beam problem
+% SIMULATE_MBB_BEAM_PTOs Run PTOs on MBB Beam problem
 %
-%   This script sets up the cantilever beam and runs the stress-constrained PTO algorithm.
+%   This script sets up the MBB Beam and runs the stress-constrained PTO algorithm.
 %
-%   Results are saved to 'cantilever_beam_PTOs_results.mat' and figures are generated.
+%   Results are saved to 'mbb_beam_PTOs_results.mat' and figures are generated.
 
 % Clear all
 clear; close all; clc;
@@ -11,7 +11,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== Cantilever Beam - PTOs (Stress-constrained) ===\n');
+fprintf('=== MBB Beam - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -31,8 +31,8 @@ max_iter = 200;     % Maximum iterations
 plot_flag = true;   % Show plots
 plot_frequency = 2; % Frequency new plot
 
-% Boundary conditions for cantilever beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(false);
+% Boundary conditions for MBB Beam
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(false);
 
 % Create initial density
 % Start with uniform density at target volume fraction
@@ -47,35 +47,27 @@ rho_init = max(rho_min, min(rho_max, rho_init));
 % Use rho_init as starting point
 rho = rho_init;
 
-% Initialize history
-history.iteration = [];
-history.compliance = [];
-history.volume = [];
-history.sigma_max = [];
-history.TM = [];
-history.change = [];
-
 % Run PTOs iteration using the reusable function
 [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
     run_ptos_iteration(rho, TM_init, nelx, nely, p, E0, nu, ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, 'Cantilever Beam');
+                       rho_min, rho_max, 'MBB Beam');
 
 % Save results
-save('cantilever_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');
+save('mbb_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');
 
 % Save figure
 if plot_flag
-    saveas(gcf, 'cantilever_beam_PTOs_results.png');
+    saveas(gcf, 'mbb_beam_PTOs_results.png');
 end
 
 fprintf('\n=== Simulation Complete ===\n');
 fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
 fprintf('Final max stress: %.4f\n', max(sigma_vm(:)));
 fprintf('Final compliance: %.4f\n', history.compliance(end));
-fprintf('Results saved to cantilever_beam_PTOs_results.mat and cantilever_beam_PTOs_results.png\n');
+fprintf('Results saved to mbb_beam_PTOs_results.mat and mbb_beam_PTOs_results.png\n');
 
 % Display summary
 fprintf('\n=== Problem Summary ===\n');
