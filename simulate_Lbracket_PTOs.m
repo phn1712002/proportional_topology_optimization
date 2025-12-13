@@ -32,7 +32,7 @@ plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency new plot
 
 % Density bounds
-rho_min = 1e-3;
+rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for L-bracket

@@ -1,6 +1,7 @@
 % SIMULATE_LBRACKET_PTOC Run PTOc on L-bracket problem
 %
 %   This script sets up the L-bracket and runs the compliance minimization PTO algorithm.
+%   Uses the modular run_ptoc_iteration function for the main optimization loop.
 %
 %   Results are saved to 'Lbracket_PTOc_results.mat' and figures are generated.
 
@@ -28,7 +29,11 @@ alpha = 0.3;            % Move limit
 volume_fraction = 0.3;  % Target volume fraction (adjusted for cutout)
 max_iter = 300;         % Maximum iterations
 plot_flag = true;       % Show plots
-plot_frequency = 2;     % Frequency new plot
+plot_frequency = 2;     % Frequency of new plots
+
+% Density bounds (consistent with PTOc documentation)
+rho_min = 1e-3;
+rho_max = 1.0;
 
 % Boundary conditions for L-bracket
 [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
@@ -42,7 +47,7 @@ rho_init = ones(nely, nelx) * volume_fraction;
 % and (nely-cutout_y+1):nely in y-direction
 cutout_x_start = nelx - cutout_x + 1;
 cutout_y_start = nely - cutout_y + 1;
-rho_init(cutout_y_start:nely, cutout_x_start:nelx) = 1e-3;
+rho_init(cutout_y_start:nely, cutout_x_start:nelx) = rho_min;
 
 % Target material (fixed) - adjust for cutout area
 total_area = nelx * nely;
@@ -50,109 +55,53 @@ cutout_area = cutout_x * cutout_y;
 active_area = total_area - cutout_area;
 TM = volume_fraction * active_area;
 
+fprintf('Mesh: %d x %d elements\n', nelx, nely);
+fprintf('Cutout: %d x %d elements (top-right corner)\n', cutout_x, cutout_y);
+fprintf('Active area: %d elements (excluding cutout)\n', active_area);
+fprintf('Target material (TM): %.2f (%.1f%% of active area)\n', TM, volume_fraction*100);
+
 % Use rho_init as starting point
 rho = rho_init;
 
-% Initialize history
-history.iteration = [];
-history.compliance = [];
-history.volume = [];
-history.change = [];
+% Run PTOc optimization using modular function
+[rho_opt, history, converged, final_iter] = run_ptoc_iteration(...
+    rho, TM, nelx, nely, p, E0, nu, ...
+    load_dofs, load_vals, fixed_dofs, ...
+    q, r_min, alpha, max_iter, ...
+    plot_flag, plot_frequency, dx, dy, ...
+    rho_min, rho_max, 'L-Bracket');
 
-% Main iteration loop
-for iter = 1:max_iter
-    fprintf('L-bracket PTOc Iteration %d\n', iter);
-    
-    % 1. FEA analysis
-    [U, K_global] = FEA_analysis(nelx, nely, rho, p, E0, nu, load_dofs, load_vals, fixed_dofs);
-    
-    % 2. Compute element compliance
-    C = compute_compliance(nelx, nely, rho, p, E0, nu, U, K_global);
-    
-    % 3. Material redistribution loop
-    RM = TM;  % Remaining material
-    rho_opt = zeros(nely, nelx);
-    
-    % Inner loop: distribute material proportionally to compliance
-    inner_max = 20;
-    for inner = 1:inner_max
-        % Compute optimal density for current RM
-        rho_opt_iter = material_distribution_PTOc(C, RM, q, 1e-3, 1.0);
-        
-        % Sum of allocated density
-        allocated = sum(rho_opt_iter(:));
-        
-        % Update remaining material
-        RM = RM - allocated;
-        
-        % Accumulate optimal density
-        rho_opt = rho_opt + rho_opt_iter;
-        
-        % Stop if RM is very small
-        if RM < 1e-6 * TM
-            break;
-        end
-    end
-    
-    % 4. Density filtering
-    rho_filtered = density_filter(rho_opt, r_min, nelx, nely, dx, dy);
-    
-    % 5. Update density with move limit
-    rho_new = update_density(rho, rho_filtered, alpha, 1e-3, 1.0);
-    
-    % 6. Compute convergence metrics
-    change = max(abs(rho_new(:) - rho(:)));
-    compliance = U' * K_global * U;
-    volume = sum(rho_new(:));
-    
-    % Store history
-    history.iteration(end+1) = iter;
-    history.compliance(end+1) = compliance;
-    history.volume(end+1) = volume;
-    history.change(end+1) = change;
-    
-    % 7. Check convergence
-    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
-    
-        % 8. Plot intermediate results
-    if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
-        figure(1);
-        subplot(2,3,1);
-        imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
-        axis xy;
-        subplot(2,3,2);
-        imagesc(C); axis equal tight; colorbar; title('Element Compliance');
-        axis xy;
-        subplot(2,3,3);
-        plot(history.iteration, history.compliance, 'b-o'); grid on; title('Total Compliance');
-        subplot(2,3,4);
-        plot(history.iteration, history.volume, 'r-*'); grid on; title('Volume');
-        subplot(2,3,5);
-        semilogy(history.iteration, history.change, 'm-d'); grid on; title('Density Change (log)');
-        subplot(2,3,6);
-        imagesc(rho_filtered); axis equal tight; colorbar; title('Filtered Density');
-        axis xy;
-        drawnow;
-    end
-    
-    % Update density for next iteration
-    rho = rho_new;
-    
-    % Stop if converged
-    if converged
-        fprintf('L-bracket PTOc converged after %d iterations.\n', iter);
-        break;
-    end
-end
+% Compute final metrics
+final_compliance = history.compliance(end);
+final_volume = history.volume(end);
+final_volume_fraction = final_volume / active_area;  % Volume fraction relative to active area
+total_volume_fraction = final_volume / total_area;   % Volume fraction relative to total domain
 
-
-% Save results
-save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'cutout_x', 'cutout_y');
+% Save results (save the final optimized density, not intermediate rho_opt)
+save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', ...
+    'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'cutout_x', 'cutout_y', ...
+    'final_compliance', 'final_volume', 'final_volume_fraction', 'total_volume_fraction', ...
+    'converged', 'final_iter');
 
 % Save figure
-saveas(gcf, 'Lbracket_PTOc_results.png');
+if plot_flag
+    saveas(gcf, 'Lbracket_PTOc_results.png');
+end
 
 fprintf('\n=== Simulation Complete ===\n');
-fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
-fprintf('Final compliance: %.4f\n', history.compliance(end));
+fprintf('Converged: %s (after %d iterations)\n', string(converged), final_iter);
+fprintf('Final compliance: %.4f\n', final_compliance);
+fprintf('Final volume: %.2f (target: %.2f)\n', final_volume, TM);
+fprintf('Final volume fraction (active area): %.4f (target: %.2f)\n', final_volume_fraction, volume_fraction);
+fprintf('Final volume fraction (total domain): %.4f\n', total_volume_fraction);
 fprintf('Results saved to Lbracket_PTOc_results.mat and Lbracket_PTOc_results.png\n');
+
+% Display final design
+figure(2);
+clf;
+imagesc(rho_opt); axis equal tight; colorbar;
+title(sprintf('L-Bracket PTOc Final Design (Iteration %d)', final_iter));
+axis xy;
+xlabel('x'); ylabel('y');
+colormap(gray);
+drawnow;
