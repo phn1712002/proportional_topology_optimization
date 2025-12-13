@@ -1,8 +1,8 @@
-% SIMULATE_LBRACKET_PTOS Run PTOs on L-bracket problem
+% SIMULATE_CANTILEVER_BEAM_PTOS Run PTOs on cantilever beam problem
 %
-%   This script sets up the L-bracket and runs the stress-constrained PTO algorithm.
+%   This script sets up the cantilever beam and runs the stress-constrained PTO algorithm.
 %
-%   Results are saved to 'Lbracket_PTOs_results.mat' and figures are generated.
+%   Results are saved to 'cantilever_beam_PTOs_results.mat' and figures are generated.
 
 % Clear all
 clear; close all; clc;
@@ -11,7 +11,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== L-bracket - PTOs (Stress-constrained) ===\n');
+fprintf('=== Cantilever Beam - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -23,37 +23,26 @@ p = 3;           % SIMP penalty exponent
 
 % PTOs parameters
 q = 1.0;         % Stress exponent for material distribution
-r_min = 2.0;     % Filter radius (in element units)
+r_min = 1.5;     % Filter radius (in element units)
 alpha = 0.3;     % Move limit
-sigma_allow = 120; % Allowable von Mises stress
+sigma_allow = 100; % Allowable von Mises stress 
 tau = 0.05;      % Stress tolerance band
-max_iter = 300;  % Maximum iterations
+max_iter = 200;  % Maximum iterations 
 plot_flag = true; % Show plots
 plot_frequency = 2; % Frequency new plot
 
-% Density bounds
-rho_min = 1e-3;
-rho_max = 1.0;
+% Boundary conditions for cantilever beam
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(false);
 
-% Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
-
-% Create initial density with cutout (void region)
-% Note: FEA_analysis expects rho to be nely x nelx
-rho_init = ones(nely, nelx) * 0.5; % Start with 50% density
-% Set cutout region to minimum density (top-right corner)
-cutout_x_start = nelx - cutout_x + 1;
-cutout_y_start = nely - cutout_y + 1;
-rho_init(cutout_y_start:nely, cutout_x_start:nelx) = rho_min;
+% Create initial density
+% Start with uniform density at target volume fraction
+TM_init = 0.4 * nelx * nely; % Start with 40% volume fraction 
+rho_init = ones(nely, nelx) * TM_init / (nelx * nely);
 
 % Apply density bounds
+rho_min = 1e-3;
+rho_max = 1.0;
 rho_init = max(rho_min, min(rho_max, rho_init));
-
-% Target material (adjustable) - adjust for cutout area
-total_area = nelx * nely;
-cutout_area = cutout_x * cutout_y;
-active_area = total_area - cutout_area;
-TM_init = 0.4 * active_area; % Start with 40% of active area
 
 % Use rho_init as starting point
 rho = rho_init;
@@ -68,7 +57,7 @@ history.change = [];
 
 % Main iteration loop
 for iter = 1:max_iter
-    fprintf('L-bracket PTOs Iteration %d: TM = %.4f\n', iter, TM_init);
+    fprintf('Cantilever Beam PTOs Iteration %d: TM = %.4f\n', iter, TM_init);
     
     % 1. FEA analysis
     [U, K_global] = FEA_analysis(nelx, nely, rho, p, E0, nu, load_dofs, load_vals, fixed_dofs);
@@ -182,7 +171,7 @@ for iter = 1:max_iter
     
     % Stop if converged
     if converged
-        fprintf('L-bracket PTOs converged after %d iterations.\n', iter);
+        fprintf('Cantilever Beam PTOs converged after %d iterations.\n', iter);
         break;
     end
 end
@@ -191,22 +180,22 @@ end
 rho_opt = rho;
 
 % Save results
-save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');
+save('cantilever_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');
 
 % Save figure
-saveas(gcf, 'Lbracket_PTOs_results.png');
+if plot_flag
+    saveas(gcf, 'cantilever_beam_PTOs_results.png');
+end
 
 fprintf('\n=== Simulation Complete ===\n');
 fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
 fprintf('Final max stress: %.4f\n', max(sigma_vm(:)));
 fprintf('Final compliance: %.4f\n', history.compliance(end));
-fprintf('Results saved to Lbracket_PTOs_results.mat and Lbracket_PTOs_results.png\n');
+fprintf('Results saved to cantilever_beam_PTOs_results.mat and cantilever_beam_PTOs_results.png\n');
 
 % Display summary
 fprintf('\n=== Problem Summary ===\n');
 fprintf('Mesh: %d x %d elements\n', nelx, nely);
-fprintf('Cutout: %d x %d elements (top-right corner)\n', cutout_x, cutout_y);
-fprintf('Active area: %d elements\n', active_area);
 fprintf('Material: E0=%.1f, nu=%.1f, p=%.1f\n', E0, nu, p);
 fprintf('PTOs parameters: q=%.1f, r_min=%.1f, alpha=%.1f\n', q, r_min, alpha);
 fprintf('Stress constraint: sigma_allow=%.1f, tau=%.1f\n', sigma_allow, tau);
