@@ -93,19 +93,18 @@ flowchart TD
     Init --> SetupTM["Xác định TM cố định<br/>TM = volume_fraction * nelx * nely"]
     SetupTM --> MainLoop["Vòng lặp chính (iter = 1:max_iter)"]
     
-    MainLoop --> FEA["Phân tích FEA<br/>[U, K] = FEA_analysis(rho, p, E0, nu)"]
-    FEA --> Compliance["Tính độ tuân thủ phần tử<br/>C = compute_compliance(U, K)"]
-    Compliance --> CheckCompliance["Kiểm tra độ tuân thủ<br/>C_total = sum(C(:))"]
+    MainLoop --> FEA["Phân tích FEA<br/>[U, K] = FEA_analysis(rho, p, E0, nu, load_dofs, load_vals, fixed_dofs)"]
+    FEA --> Compliance["Tính độ tuân thủ phần tử<br/>C = compute_compliance(nelx, nely, rho, p, E0, nu, U, K_global)"]
     
-    CheckCompliance --> Distribute
+    Compliance --> Distribute
     
     subgraph Distribute[Phân phối vật liệu]
         direction TB
-        D1["Khởi tạo RM = TM<br/>rho_opt = zeros"]
+        D1["Khởi tạo RM = TM<br/>rho_distributed = zeros"]
         D2["Vòng lặp trong (inner = 1:20)"]
-        D3["Phân phối tỷ lệ theo độ tuân thủ<br/>rho_i = RM * (C_i^q) / sum(C_j^q)"]
-        D4["Cộng dồn vào rho_opt"]
-        D5["Cập nhật RM = RM - sum(rho_i)"]
+        D3["Phân phối tỷ lệ theo độ tuân thủ<br/>rho_opt_iter = material_distribution_PTOc(C, RM, q, rho_min, rho_max)"]
+        D4["Cộng dồn vào rho_distributed"]
+        D5["Cập nhật RM = RM - sum(rho_opt_iter)"]
         D6{"RM < 1e-6 * TM?"}
         D7["Thoát vòng lặp trong"]
         
@@ -114,11 +113,11 @@ flowchart TD
         D6 -- "Không" --> D2
     end
     
-    Distribute --> Filter["Lọc mật độ<br/>rho_filtered = density_filter(rho_opt, r_min)"]
-    Filter --> Update["Cập nhật mật độ<br/>rho_new = alpha*rho + (1-alpha)*rho_filtered"]
+    Distribute --> Filter["Lọc mật độ<br/>rho_filtered = density_filter(rho_distributed, r_min, nelx, nely, dx, dy)"]
+    Filter --> Update["Cập nhật mật độ<br/>rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max)"]
     Update --> Convergence["Kiểm tra hội tụ"]
     
-    Convergence --> Converged{"Đã hội tụ?<br/>max|rho_new - rho| < tol"}
+    Convergence --> Converged{"Đã hội tụ?<br/>check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc')"}
     Converged -- "Có" --> End["Kết thúc<br/>Trả về rho_opt"]
     Converged -- "Không" --> NextIter["Cập nhật rho = rho_new<br/>iter = iter + 1"]
     NextIter --> MainLoop
@@ -165,22 +164,23 @@ C_total = sum(C(:));  % Hoặc C_total = U' * K_global * U
 
 ```matlab
 RM = TM;  % Vật liệu còn lại
-rho_opt = zeros(nely, nelx);
+rho_distributed = zeros(nely, nelx);  % Accumulated distributed density
 
+% Inner loop: distribute material proportionally to compliance
 for inner = 1:20
-    % Phân phối tỷ lệ theo độ tuân thủ
+    % Compute optimal density for current RM
     rho_opt_iter = material_distribution_PTOc(C, RM, q, rho_min, rho_max);
     
-    % Tính tổng vật liệu đã phân phối
+    % Sum of allocated density
     allocated = sum(rho_opt_iter(:));
     
-    % Cập nhật vật liệu còn lại
+    % Update remaining material
     RM = RM - allocated;
     
-    % Cộng dồn vào mật độ tối ưu
-    rho_opt = rho_opt + rho_opt_iter;
+    % Accumulate distributed density
+    rho_distributed = rho_distributed + rho_opt_iter;
     
-    % Dừng nếu RM rất nhỏ
+    % Stop if RM is very small
     if RM < 1e-6 * TM
         break;
     end
@@ -190,33 +190,65 @@ end
 Công thức phân phối trong `material_distribution_PTOc`:
 
 ```matlab
-% Tính trọng số dựa trên độ tuân thủ
+function rho_opt = material_distribution_PTOc(C, RM, q, rho_min, rho_max)
+% MATERIAL_DISTRIBUTION_PTOC Compute optimal density distribution for compliance PTO
+%
+%   RHO_OPT = MATERIAL_DISTRIBUTION_PTOC(C, RM, Q, RHO_MIN, RHO_MAX)
+%   distributes the remaining material RM proportionally to the compliance
+%   raised to power q.
+%
+% Formula:
+%   rho_i^opt = RM * C_i^q / sum_j C_j^q
+
+% Avoid zero compliance to prevent division issues
+C = max(C, 1e-12);
+
+% Compute weighted compliance
 weighted_C = C.^q;
+
+% Total weighted compliance
 total_weight = sum(weighted_C(:));
 
-% Phân phối tỷ lệ
-rho_opt = RM * weighted_C / total_weight;
+% If total weight is zero (unlikely), distribute uniformly
+if total_weight < 1e-12
+    rho_opt = RM / (nelx * nely) * ones(nely, nelx);
+else
+    % Proportional distribution
+    rho_opt = RM * weighted_C / total_weight;
+end
 
-% Áp dụng giới hạn
+% Apply density bounds
 rho_opt = max(rho_min, min(rho_max, rho_opt));
+end
 ```
 
 #### **2.3. Lọc mật độ**
 
 ```matlab
-rho_filtered = density_filter(rho_opt, r_min, nelx, nely, dx, dy);
+rho_filtered = density_filter(rho_distributed, r_min, nelx, nely, dx, dy);
 ```
 
-Bộ lọc hình nón với bán kính `r_min` (giống PTOs):
+Bộ lọc hình nón với bán kính `r_min`:
 
 ```matlab
-% Kernel hình nón
+function rho_filtered = density_filter(rho, r_min, nelx, nely, dx, dy)
+% DENSITY_FILTER Apply cone-shaped filter to density field
+%
+%   RHO_FILTERED = DENSITY_FILTER(RHO, R_MIN, NELX, NELY, DX, DY)
+%   applies a cone-shaped filter with radius r_min to the density field.
+%
+%   Kernel: max(0, r_min - dist) where dist = sqrt((i*dx)^2 + (j*dy)^2)
+
+% Create kernel
+kernel_size = ceil(r_min);
+[ii, jj] = meshgrid(-kernel_size:kernel_size, -kernel_size:kernel_size);
 dist = sqrt((ii*dx).^2 + (jj*dy).^2);
 kernel = max(0, r_min - dist);
-kernel = kernel / sum(kernel(:));  % Chuẩn hóa
+kernel = kernel / sum(kernel(:));  % Normalize
 
-% Áp dụng convolution
-rho_filtered = conv2(rho_opt, kernel, 'same');
+% Apply convolution
+rho_filtered = conv2(rho, kernel, 'same');
+end
 ```
 
 #### **2.4. Cập nhật mật độ với move limit**
@@ -225,10 +257,21 @@ rho_filtered = conv2(rho_opt, kernel, 'same');
 rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max);
 ```
 
-Công thức cập nhật:
+Công thức cập nhật trong `update_density`:
 
 ```matlab
+function rho_new = update_density(rho_prev, rho_opt, alpha, rho_min, rho_max)
+% UPDATE_DENSITY Update density field with move limit
+%
+%   RHO_NEW = UPDATE_DENSITY(RHO_PREV, RHO_OPT, ALPHA, RHO_MIN, RHO_MAX)
+%   computes new density using move limit alpha.
+%
+% Formula:
+%   rho_new = alpha * rho_prev + (1 - alpha) * rho_opt
+
 rho_new = alpha * rho_prev + (1 - alpha) * rho_opt;
+rho_new = max(rho_min, min(rho_max, rho_new));  % Apply bounds
+end
 ```
 
 #### **2.5. Kiểm tra hội tụ**
@@ -237,11 +280,34 @@ rho_new = alpha * rho_prev + (1 - alpha) * rho_opt;
 % Tính thay đổi mật độ
 change = max(abs(rho_new(:) - rho(:)));
 
-% Kiểm tra điều kiện hội tụ cho PTOc
-converged = change < 1e-3;  % Chỉ dựa trên thay đổi mật độ
-
-% Hoặc sử dụng hàm check_convergence
+% Sử dụng hàm check_convergence cho PTOc
 [converged, change] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
+```
+
+Hàm `check_convergence` cho PTOc:
+
+```matlab
+function [converged, change] = check_convergence(rho_new, rho_prev, iter, max_iter, tol, mode)
+% CHECK_CONVERGENCE Check convergence criteria for PTO algorithms
+%
+%   For PTOc: max|rho_new - rho_prev| < tol
+
+% Compute maximum density change
+change = max(abs(rho_new(:) - rho_prev(:)));
+
+% Check iteration limit
+if iter >= max_iter
+    converged = true;
+    return;
+end
+
+% PTOc convergence: density change tolerance
+if change < tol
+    converged = true;
+else
+    converged = false;
+end
+end
 ```
 
 ---

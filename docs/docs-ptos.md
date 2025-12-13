@@ -94,8 +94,8 @@ flowchart TD
     
     Init --> MainLoop["Vòng lặp chính (iter = 1:max_iter)"]
     
-    MainLoop --> FEA["Phân tích FEA<br/>[U, K] = FEA_analysis(rho, p, E0, nu)"]
-    FEA --> Stress["Tính ứng suất Von Mises<br/>sigma_vm = compute_stress(U)"]
+    MainLoop --> FEA["Phân tích FEA<br/>[U, K] = FEA_analysis(rho, p, E0, nu, load_dofs, load_vals, fixed_dofs)"]
+    FEA --> Stress["Tính ứng suất Von Mises<br/>sigma_vm = compute_stress(nelx, nely, rho, p, E0, nu, U)"]
     Stress --> CheckStress["Kiểm tra ứng suất<br/>sigma_max = max(sigma_vm)"]
     
     CheckStress --> Condition{"sigma_max > (1+tau)*sigma_allow?"}
@@ -112,9 +112,9 @@ flowchart TD
         direction TB
         D1["Khởi tạo RM = TM<br/>rho_opt = zeros"]
         D2["Vòng lặp trong (inner = 1:20)"]
-        D3["Phân phối tỷ lệ theo ứng suất<br/>rho_i = RM * (sigma_i^q) / sum(sigma_j^q)"]
+        D3["Phân phối tỷ lệ theo ứng suất<br/>rho_opt_iter = material_distribution_PTOs(sigma_vm, RM, q, 1.0, rho_min, rho_max)"]
         D4["Cộng dồn vào rho_opt"]
-        D5["Cập nhật RM = RM - sum(rho_i)"]
+        D5["Cập nhật RM = RM - sum(rho_opt_iter)"]
         D6{"RM < 1e-6 * TM?"}
         D7["Thoát vòng lặp trong"]
         
@@ -123,11 +123,11 @@ flowchart TD
         D6 -- "Không" --> D2
     end
     
-    Distribute --> Filter["Lọc mật độ<br/>rho_filtered = density_filter(rho_opt, r_min)"]
-    Filter --> Update["Cập nhật mật độ<br/>rho_new = alpha*rho + (1-alpha)*rho_filtered"]
+    Distribute --> Filter["Lọc mật độ<br/>rho_filtered = density_filter(rho_opt, r_min, nelx, nely, dx, dy)"]
+    Filter --> Update["Cập nhật mật độ<br/>rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max)"]
     Update --> Convergence["Kiểm tra hội tụ"]
     
-    Convergence --> Converged{"Đã hội tụ?"}
+    Convergence --> Converged{"Đã hội tụ?<br/>check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOs', sigma_max, sigma_allow, tau)"}
     Converged -- "Có" --> End["Kết thúc<br/>Trả về rho_opt"]
     Converged -- "Không" --> NextIter["Cập nhật rho = rho_new<br/>iter = iter + 1"]
     NextIter --> MainLoop
@@ -177,35 +177,38 @@ Kết quả này dùng để quyết định phân phối vật liệu cho vòng
 
 ```matlab
 if sigma_max > (1 + tau) * sigma_allow
-    % Ứng suất quá cao → cần thêm vật liệu
-    TM = TM * 1.05;
+    % Too much stress → increase material
+    TM_init = TM_init * 1.05;
+    fprintf('  Stress %.3f > allowable band → increase TM to %.4f\n', sigma_max, TM_init);
 elseif sigma_max < (1 - tau) * sigma_allow
-    % Ứng suất quá thấp → có thể giảm vật liệu
-    TM = TM * 0.95;
+    % Too little stress → decrease material
+    TM_init = TM_init * 0.95;
+    fprintf('  Stress %.3f < allowable band → decrease TM to %.4f\n', sigma_max, TM_init);
 end
 ```
 
 #### **2.3. Vòng lặp trong – Phân phối vật liệu**
 
 ```matlab
-RM = TM;  % Vật liệu còn lại
+RM = TM_init;  % Remaining material
 rho_opt = zeros(nely, nelx);
 
+% Inner loop: distribute material proportionally to stress
 for inner = 1:20
-    % Phân phối tỷ lệ theo ứng suất
+    % Compute optimal density for current RM
     rho_opt_iter = material_distribution_PTOs(sigma_vm, RM, q, 1.0, rho_min, rho_max);
     
-    % Tính tổng vật liệu đã phân phối
+    % Sum of allocated density
     allocated = sum(rho_opt_iter(:));
     
-    % Cập nhật vật liệu còn lại
+    % Update remaining material
     RM = RM - allocated;
     
-    % Cộng dồn vào mật độ tối ưu
+    % Accumulate optimal density
     rho_opt = rho_opt + rho_opt_iter;
     
-    % Dừng nếu RM rất nhỏ
-    if RM < 1e-6 * TM
+    % Stop if RM is very small
+    if RM < 1e-6 * TM_init
         break;
     end
 end
@@ -214,15 +217,41 @@ end
 Công thức phân phối trong `material_distribution_PTOs`:
 
 ```matlab
-% Tính trọng số dựa trên ứng suất
-weighted_stress = sigma_vm.^q .* volume;  % volume thường = 1
+function rho_opt = material_distribution_PTOs(sigma_vm, RM, q, volume, rho_min, rho_max)
+% MATERIAL_DISTRIBUTION_PTOS Compute optimal density distribution for stress-constrained PTO
+%
+%   RHO_OPT = MATERIAL_DISTRIBUTION_PTOS(SIGMA_VM, RM, Q, VOLUME, RHO_MIN, RHO_MAX)
+%   distributes the remaining material RM proportionally to the stress raised
+%   to power q, with optional volume weighting.
+%
+% Formula:
+%   rho_i^opt = RM * (sigma_i^q * v_i) / sum_j (sigma_j^q * v_j)
+
+% If volume is scalar, create uniform matrix
+if isscalar(volume)
+    volume = volume * ones(nely, nelx);
+end
+
+% Avoid zero stress to prevent division issues
+sigma_vm = max(sigma_vm, 1e-9);
+
+% Compute weighted stress
+weighted_stress = sigma_vm.^q .* volume;
+
+% Total weighted stress
 total_weight = sum(weighted_stress(:));
 
-% Phân phối tỷ lệ
-rho_opt = RM * weighted_stress / total_weight;
+% If total weight is zero (unlikely), distribute uniformly
+if total_weight < 1e-12
+    rho_opt = RM / (nelx * nely) * ones(nely, nelx);
+else
+    % Proportional distribution
+    rho_opt = RM * weighted_stress / total_weight;
+end
 
-% Áp dụng giới hạn
+% Apply density bounds
 rho_opt = max(rho_min, min(rho_max, rho_opt));
+end
 ```
 
 #### **2.4. Lọc mật độ**
@@ -231,16 +260,27 @@ rho_opt = max(rho_min, min(rho_max, rho_opt));
 rho_filtered = density_filter(rho_opt, r_min, nelx, nely, dx, dy);
 ```
 
-Bộ lọc hình nón với bán kính `r_min`:
+Bộ lọc hình nón với bán kính `r_min` (giống PTOc):
 
 ```matlab
-% Kernel hình nón
+function rho_filtered = density_filter(rho, r_min, nelx, nely, dx, dy)
+% DENSITY_FILTER Apply cone-shaped filter to density field
+%
+%   RHO_FILTERED = DENSITY_FILTER(RHO, R_MIN, NELX, NELY, DX, DY)
+%   applies a cone-shaped filter with radius r_min to the density field.
+%
+%   Kernel: max(0, r_min - dist) where dist = sqrt((i*dx)^2 + (j*dy)^2)
+
+% Create kernel
+kernel_size = ceil(r_min);
+[ii, jj] = meshgrid(-kernel_size:kernel_size, -kernel_size:kernel_size);
 dist = sqrt((ii*dx).^2 + (jj*dy).^2);
 kernel = max(0, r_min - dist);
-kernel = kernel / sum(kernel(:));  % Chuẩn hóa
+kernel = kernel / sum(kernel(:));  % Normalize
 
-% Áp dụng convolution
-rho_filtered = conv2(rho_opt, kernel, 'same');
+% Apply convolution
+rho_filtered = conv2(rho, kernel, 'same');
+end
 ```
 
 #### **2.5. Cập nhật mật độ với move limit**
@@ -249,10 +289,21 @@ rho_filtered = conv2(rho_opt, kernel, 'same');
 rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max);
 ```
 
-Công thức cập nhật:
+Công thức cập nhật trong `update_density` (giống PTOc):
 
 ```matlab
+function rho_new = update_density(rho_prev, rho_opt, alpha, rho_min, rho_max)
+% UPDATE_DENSITY Update density field with move limit
+%
+%   RHO_NEW = UPDATE_DENSITY(RHO_PREV, RHO_OPT, ALPHA, RHO_MIN, RHO_MAX)
+%   computes new density using move limit alpha.
+%
+% Formula:
+%   rho_new = alpha * rho_prev + (1 - alpha) * rho_opt
+
 rho_new = alpha * rho_prev + (1 - alpha) * rho_opt;
+rho_new = max(rho_min, min(rho_max, rho_new));  % Apply bounds
+end
 ```
 
 #### **2.6. Kiểm tra hội tụ**
@@ -261,13 +312,40 @@ rho_new = alpha * rho_prev + (1 - alpha) * rho_opt;
 % Tính thay đổi mật độ
 change = max(abs(rho_new(:) - rho(:)));
 
-% Kiểm tra điều kiện hội tụ cho PTOs
+% Sử dụng hàm check_convergence cho PTOs
+[converged, change] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOs', sigma_max, sigma_allow, tau);
+```
+
+Hàm `check_convergence` cho PTOs:
+
+```matlab
+function [converged, change] = check_convergence(rho_new, rho_prev, iter, max_iter, tol, mode, sigma_max, sigma_allow, tau)
+% CHECK_CONVERGENCE Check convergence criteria for PTO algorithms
+%
+%   For PTOs: sigma_max within (1±tau)*sigma_allow AND density change small
+
+% Compute maximum density change
+change = max(abs(rho_new(:) - rho_prev(:)));
+
+% Check iteration limit
+if iter >= max_iter
+    converged = true;
+    return;
+end
+
+% PTOs convergence: stress within band AND density change small
 stress_lower = (1 - tau) * sigma_allow;
 stress_upper = (1 + tau) * sigma_allow;
-stress_ok = (sigma_max >= stress_lower) && (sigma_max <= stress_upper);
-density_ok = change < 1e-3;
 
-converged = stress_ok && density_ok;
+stress_ok = (sigma_max >= stress_lower) && (sigma_max <= stress_upper);
+density_ok = change < tol;
+
+if stress_ok && density_ok
+    converged = true;
+else
+    converged = false;
+end
+end
 ```
 
 ---
@@ -298,4 +376,3 @@ Thuật toán PTOs là một phương pháp đơn giản nhưng hiệu quả đ�
 * các cấu trúc ít phức tạp nhưng cần ràng buộc ứng suất chặt chẽ.
 
 Với việc không đòi hỏi đạo hàm và áp dụng cơ chế phân phối vật liệu tỷ lệ theo ứng suất, PTOs trở thành một công cụ mạnh mẽ và dễ áp dụng trong thực hành.
-
