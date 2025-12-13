@@ -1,6 +1,7 @@
 % SIMULATE_CANTILEVER_BEAM_PTOS Run PTOs on cantilever beam problem
 %
 %   This script sets up the cantilever beam and runs the stress-constrained PTO algorithm.
+%   Uses the modular run_ptoc_iteration function for the main optimization loop.
 %
 %   Results are saved to 'cantilever_beam_PTOs_results.mat' and figures are generated.
 

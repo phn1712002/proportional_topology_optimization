@@ -30,9 +30,9 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
 
     % --- CONSTANTS: SPECIFIC DIMENSIONS ---
     NELX = 100;           % Number of elements in x-direction
-    NELY = 40;            % Number of elements in y-direction
-    CUTOUT_X = 50;        % Width of the top-right cutout
-    CUTOUT_Y = 20;        % Height of the top-right cutout
+    NELY = 100;            % Number of elements in y-direction
+    CUTOUT_X = 60;        % Width of the top-right cutout
+    CUTOUT_Y = 60;        % Height of the top-right cutout
     TOTAL_LOAD = -1;      % Total downward load (negative y-direction)
 
     % Assign to output variables

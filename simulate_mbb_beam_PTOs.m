@@ -1,6 +1,7 @@
-% SIMULATE_MBB_BEAM_PTOs Run PTOs on MBB Beam problem
+% SIMULATE_MBB_BEAM_PTOS Run PTOs on MBB Beam problem
 %
 %   This script sets up the MBB Beam and runs the stress-constrained PTO algorithm.
+%   Uses the modular run_ptoc_iteration function for the main optimization loop.
 %
 %   Results are saved to 'mbb_beam_PTOs_results.mat' and figures are generated.
 
