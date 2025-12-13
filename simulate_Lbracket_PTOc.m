@@ -23,9 +23,9 @@ nu = 0.3;        % Poisson's ratio
 p = 3;           % SIMP penalty exponent
 
 % PTOc parameters
-q = 1.0;                % Compliance exponent for material distribution
-r_min = 2.0;            % Filter radius (in element units)
-alpha = 0.3;            % Move limit
+q = 2.0;                % Compliance exponent for material distribution
+r_min = 1.25;            % Filter radius (in element units)
+alpha = 0.5;            % Move limit
 volume_fraction = 0.3;  % Target volume fraction (adjusted for cutout)
 max_iter = 300;         % Maximum iterations
 plot_flag = true;       % Show plots

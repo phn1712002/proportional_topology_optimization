@@ -23,9 +23,9 @@ nu = 0.3;        % Poisson's ratio
 p = 3;           % SIMP penalty exponent
 
 % PTOs parameters
-q = 1.0;            % Stress exponent for material distribution
+q = 2.0;            % Stress exponent for material distribution
 r_min = 1.5;        % Filter radius (in element units)
-alpha = 0.3;        % Move limit
+alpha = 0.5;        % Move limit
 sigma_allow = 1.08; % Allowable von Mises stress 
 tau = 0.05;         % Stress tolerance band
 max_iter = 200;     % Maximum iterations 
