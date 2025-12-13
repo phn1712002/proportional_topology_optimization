@@ -165,43 +165,6 @@ rho_opt = rho;
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');
 
-% Plot final design with stress
-figure(2);
-figure('Position', [100, 100, 800, 600]);
-subplot(2,2,1);
-imagesc(rho_opt); axis equal tight; colorbar;
-axis xy;
-title(sprintf('L-bracket PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
-xlabel('x'); ylabel('y');
-
-% Compute stress field for final design
-[U, K_global] = FEA_analysis(nelx, nely, rho_opt, p, E0, nu, load_dofs, load_vals, fixed_dofs);
-sigma_vm = compute_stress(nelx, nely, rho_opt, p, E0, nu, U);
-subplot(2,2,2);
-imagesc(sigma_vm); axis equal tight; colorbar;
-axis xy;
-title(sprintf('Von Mises Stress (max = %.2f)', max(sigma_vm(:))));
-xlabel('x'); ylabel('y');
-
-% Convergence history
-subplot(2,2,3);
-plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5);
-grid on; xlabel('Iteration'); ylabel('Compliance');
-title('Compliance History');
-
-subplot(2,2,4);
-yyaxis left;
-plot(history.iteration, history.sigma_max, 'r-s', 'LineWidth', 1.5);
-ylabel('Max Stress');
-yyaxis right;
-plot(history.iteration, history.volume./(nelx*nely), 'g-*', 'LineWidth', 1.5);
-ylabel('Volume Fraction');
-grid on; xlabel('Iteration');
-title('Stress and Volume History');
-legend('Max Stress', 'Volume Fraction', 'Location', 'best');
-
-sgtitle('L-bracket - PTOs Results');
-
 % Save figure
 saveas(gcf, 'Lbracket_PTOs_results.png');
 
