@@ -47,14 +47,6 @@ rho_init = max(rho_min, min(rho_max, rho_init));
 % Use rho_init as starting point
 rho = rho_init;
 
-% Initialize history
-history.iteration = [];
-history.compliance = [];
-history.volume = [];
-history.sigma_max = [];
-history.TM = [];
-history.change = [];
-
 % Run PTOs iteration using the reusable function
 [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
     run_ptos_iteration(rho, TM_init, nelx, nely, p, E0, nu, ...
