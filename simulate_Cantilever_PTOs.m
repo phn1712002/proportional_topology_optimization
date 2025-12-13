@@ -28,11 +28,11 @@ alpha = 0.3;     % Move limit
 sigma_allow = 100; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
-TM_init = 0.4 * nelx * nely; % Initial target material (40% volume fraction)
 plot_flag = true; % Show plots
 
 % Boundary conditions for cantilever beam
 [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(plot_flag);
+TM_init = 0.4 * nelx * nely; % Initial target material (40% volume fraction)
 
 % Run PTOs
 tic;

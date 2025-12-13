@@ -1,6 +1,6 @@
-function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary_specific(plot_flag)
-%% L_BRACKET_BOUNDARY_SPECIFIC Define BCs for a specific L-bracket geometry.
-%   [FIXED_DOFS, LOAD_DOFS, LOAD_VALS, NELX, NELY, CUTOUT_X, CUTOUT_Y] = L_BRACKET_BOUNDARY_SPECIFIC(PLOT_FLAG)
+function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(plot_flag)
+%% L_BRACKET_BOUNDARY Define BCs for a specific L-bracket geometry.
+%   [FIXED_DOFS, LOAD_DOFS, LOAD_VALS, NELX, NELY, CUTOUT_X, CUTOUT_Y] = L_BRACKET_BOUNDARY(PLOT_FLAG)
 %   returns the boundary conditions for an L-bracket of size 100x40 with a
 %   50x20 cutout from the top-right corner.
 %
