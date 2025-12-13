@@ -315,7 +315,7 @@ Common issues include singular stiffness matrices, lack of convergence, checkerb
 
 **Biyikli, E., & To, A. C. (2015).**
 *Proportional Topology Optimization: A New Non-Sensitivity Method for Solving Stress Constrained and Minimum Compliance Problems and Its Implementation in MATLAB.*
-PLoS ONE, 10(12), e0145041.
+PLoS ONE, 10(12), e0145041, https://doi.org/10.1371/journal.pone.0145041.
 
 ---
 
