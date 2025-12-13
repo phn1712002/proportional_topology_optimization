@@ -135,4 +135,5 @@ Sau khi sinh file lần đầu:
 * Không làm đơn giản hóa quá mức (flowchart phải đủ bước).
 * Luôn đảm bảo có:
   *Khởi tạo → Xử lý chính → Kiểm tra điều kiện → Lặp → Kết thúc*
+---
 

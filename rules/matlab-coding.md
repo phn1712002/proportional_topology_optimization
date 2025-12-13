@@ -143,3 +143,4 @@ import signal.*
 * [ ] File ≤ 1 function/class chính
 * [ ] Code dễ đọc, dễ maintain
 * [ ] Performance hợp lý (vectorization thay vì loop khi có thể)
+---

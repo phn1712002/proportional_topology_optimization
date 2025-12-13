@@ -221,5 +221,3 @@ Các tham số quan trọng cần điều chỉnh cho từng bài toán:
 - Đề xuất cải tiến: Tạo issue hoặc merge request
 
 ---
-
-*Lưu ý: Khi thêm tính năng mới, đảm bảo tuân thủ quy tắc trong `matlab-coding.md` và cập nhật tài liệu tương ứng.*
