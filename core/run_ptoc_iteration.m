@@ -68,7 +68,7 @@ for iter = 1:max_iter
     
     % 3. Material redistribution loop
     RM = TM;  % Remaining material (fixed target)
-    rho_opt = zeros(nely, nelx);
+    rho_distributed = zeros(nely, nelx);  % Accumulated distributed density
     
     % Inner loop: distribute material proportionally to compliance
     for inner = 1:inner_max
@@ -81,8 +81,8 @@ for iter = 1:max_iter
         % Update remaining material
         RM = RM - allocated;
         
-        % Accumulate optimal density
-        rho_opt = rho_opt + rho_opt_iter;
+        % Accumulate distributed density
+        rho_distributed = rho_distributed + rho_opt_iter;
         
         % Stop if RM is very small
         if RM < 1e-6 * TM
@@ -91,7 +91,7 @@ for iter = 1:max_iter
     end
     
     % 4. Density filtering
-    rho_filtered = density_filter(rho_opt, r_min, nelx, nely, dx, dy);
+    rho_filtered = density_filter(rho_distributed, r_min, nelx, nely, dx, dy);
     
     % 5. Update density with move limit
     rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max);
