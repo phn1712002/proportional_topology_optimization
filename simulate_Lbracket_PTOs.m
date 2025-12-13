@@ -16,7 +16,6 @@ fprintf('=== L-bracket - PTOs (Stress-constrained) ===\n');
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
 
-
 % Material properties
 E0 = 1.0;        % Young's modulus of solid
 nu = 0.3;        % Poisson's ratio
@@ -30,32 +29,26 @@ sigma_allow = 120; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
-plot_frequency = 2; % Frequency new plot
+plot_frequency = 10; % Frequency new plot
 
 % Boundary conditions for L-bracket
 [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
-TM_init = 0.3 * nelx * nely; % Initial target material (30% volume fraction due to cutout)
 
 % Create initial density with cutout (void region)
-rho_init = ones(nely, nelx);
-% Set cutout region to minimum density
-rho_init(1:cutout_y, 1:cutout_x) = 1e-3;
+% Note: FEA_analysis expects rho to be nely x nelx
+rho_init = ones(nely, nelx) * 0.5; % Start with 50% density
+% Set cutout region to minimum density (top-right corner)
+cutout_x_start = nelx - cutout_x + 1;
+cutout_y_start = nely - cutout_y + 1;
+rho_init(cutout_y_start:nely, cutout_x_start:nelx) = 1e-3;
 
-% Run PTOs with custom initial density
-% We need to modify PTOs_main to accept initial density, but for simplicity
-% we'll call PTOs_main and let it generate uniform density, then replace.
-% Instead, we'll create a custom loop or modify. Let's use a simplified approach:
-% Use PTOs_main but adjust initial TM to account for cutout.
+% Target material (adjustable) - adjust for cutout area
+total_area = nelx * nely;
+cutout_area = cutout_x * cutout_y;
+active_area = total_area - cutout_area;
+TM_init = 0.4 * active_area; % Start with 40% of active area
 
-% Since PTOs_main uses uniform initial density, we'll create a wrapper.
-% For now, we'll just run with the cutout considered as void (density = rho_min).
-% We'll set rho_init as the initial density and adjust TM accordingly.
-
-% Compute actual initial volume
-initial_volume = sum(rho_init(:));
-TM_init = initial_volume * 0.8; % Use 80% of current volume as target
-
-% Store rho_init for later use
+% Use rho_init as starting point
 rho = rho_init;
 
 % Initialize history
@@ -66,7 +59,7 @@ history.sigma_max = [];
 history.TM = [];
 history.change = [];
 
-% Main iteration loop (simplified from PTOs_main)
+% Main iteration loop
 for iter = 1:max_iter
     fprintf('L-bracket PTOs Iteration %d: TM = %.4f\n', iter, TM_init);
     
@@ -139,9 +132,9 @@ for iter = 1:max_iter
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
-        imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
+        imagesc(rho_new'); axis equal tight; axis xy; colorbar; title(sprintf('Density (iter %d)', iter));
         subplot(2,3,2);
-        imagesc(sigma_vm); axis equal tight; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
+        imagesc(sigma_vm'); axis equal tight; axis xy; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Compliance');
         subplot(2,3,4);
@@ -168,13 +161,13 @@ end
 rho_opt = rho;
 
 % Save results
-save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y', 'time_elapsed');
+save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');
 
 % Plot final design with stress
 figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
-imagesc(rho_opt); axis equal tight; colorbar;
+imagesc(rho_opt'); axis equal tight; axis xy; colorbar;
 title(sprintf('L-bracket PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -182,7 +175,7 @@ xlabel('x'); ylabel('y');
 [U, K_global] = FEA_analysis(nelx, nely, rho_opt, p, E0, nu, load_dofs, load_vals, fixed_dofs);
 sigma_vm = compute_stress(nelx, nely, rho_opt, p, E0, nu, U);
 subplot(2,2,2);
-imagesc(sigma_vm); axis equal tight; colorbar;
+imagesc(sigma_vm'); axis equal tight; axis xy; colorbar;
 title(sprintf('Von Mises Stress (max = %.2f)', max(sigma_vm(:))));
 xlabel('x'); ylabel('y');
 

@@ -22,16 +22,16 @@ function [rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_f
 %   [rho, hist] = PTOc_main(60, 30, 3, 1, 1.5, 0.3, 0.4, 200, true);
 
 % Default parameters
-if nargin < 11
-    plot_frequency = 10;
-end
 if nargin < 10
-    plot_flag = true;
+    plot_frequency = 10;
 end
 if nargin < 9
     plot_flag = true;
 end
 if nargin < 8
+    plot_flag = true;
+end
+if nargin < 7
     max_iter = 200;
 end
 if nargin < 7
@@ -120,7 +120,7 @@ for iter = 1:max_iter
     % 7. Check convergence
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
     
-    % 8. Plot intermediate results
+        % 8. Plot intermediate results
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
