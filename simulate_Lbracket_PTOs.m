@@ -15,9 +15,6 @@ fprintf('=== L-bracket - PTOs (Stress-constrained) ===\n');
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
 
-% Cutout dimensions (top-left corner)
-cutout_x = 40;   % Width of cutout
-cutout_y = 40;   % Height of cutout
 
 % Material properties
 E0 = 1.0;        % Young's modulus of solid
@@ -31,11 +28,11 @@ alpha = 0.3;     % Move limit
 sigma_allow = 120; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
-TM_init = 0.3 * nelx * nely; % Initial target material (30% volume fraction due to cutout)
 plot_flag = true; % Show plots
 
 % Boundary conditions for L-bracket
 [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(plot_flag);
+TM_init = 0.3 * nelx * nely; % Initial target material (30% volume fraction due to cutout)
 
 % Create initial density with cutout (void region)
 rho_init = ones(nely, nelx);
