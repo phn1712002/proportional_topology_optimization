@@ -1,0 +1,168 @@
+function [rho_opt, history, time_elapsed] = run_ptoc_optimization(problem_def, ptoc_params, solver_config)
+%RUN_PTOC_OPTIMIZATION Executes the compliance-based PTO (PTOc) algorithm.
+%
+%   This function optimizes material density to minimize the total structural
+%   compliance for a fixed volume fraction constraint.
+%
+%   [RHO_OPT, HISTORY, TIME_ELAPSED] = RUN_PTOC_OPTIMIZATION(PROBLEM_DEF, PTOC_PARAMS, SOLVER_CONFIG)
+%
+% Inputs:
+%   problem_def - A struct containing the problem definition:
+%     .nelx, .nely   - Number of elements along the x and y axes.
+%     .dx, .dy       - Element dimensions.
+%     .load_dofs     - Degrees of freedom subjected to loads.
+%     .load_vals     - Load values.
+%     .fixed_dofs    - Fixed degrees of freedom.
+%
+%   ptoc_params - A struct containing the PTOc algorithm parameters:
+%     .E0, .nu       - Young's modulus and Poisson's ratio.
+%     .volume_fraction - Target volume fraction of the design domain.
+%     .penalty       - Penalty factor in the SIMP model (p).
+%     .dist_exp      - Material distribution exponent (q).
+%     .filter_radius - Density filter radius (r_min).
+%     .move_limit    - Density change move limit per iteration (alpha).
+%
+%   solver_config - A struct containing solver configurations:
+%     .max_iterations  - Maximum number of iterations.
+%     .plot_flag       - Flag to enable/disable plotting (true/false).
+%     .plot_frequency  - Plotting frequency (e.g., every 5 iterations).
+%
+% Outputs:
+%   rho_opt       - The optimized material density matrix.
+%   history       - A struct containing the history of metrics per iteration.
+%   time_elapsed  - Total execution time of the algorithm (in seconds).
+%
+% Assumptions: Helper functions such as FEA_analysis, compute_compliance,
+% material_distribution_PTOc, density_filter, update_density,
+% and check_convergence are available in the MATLAB path.
+
+% ======================================================================
+% INITIALIZATION AND SETUP
+% ======================================================================
+
+% Material and algorithm constants
+RHO_MIN = 1e-3; % Minimum density to avoid singular stiffness matrix
+RHO_MAX = 1.0;  % Maximum density
+MAX_INNER_ITERATIONS = 20; % Max iterations for material redistribution
+RM_CONVERGENCE_TOL = 1e-6; % Convergence tolerance for remaining material
+CONVERGENCE_TOL = 1e-3;    % Convergence tolerance for density change
+
+% Unpack input structs for better readability
+nelx = problem_def.nelx;
+nely = problem_def.nely;
+dx = problem_def.dx;
+dy = problem_def.dy;
+
+E0 = ptoc_params.E0;
+nu = ptoc_params.nu;
+penalty_p = ptoc_params.penalty;
+dist_exp_q = ptoc_params.dist_exp;
+filter_radius = ptoc_params.filter_radius;
+move_limit = ptoc_params.move_limit;
+volume_fraction = ptoc_params.volume_fraction;
+
+% Set the fixed target material based on volume fraction
+target_material = volume_fraction * nelx * nely;
+
+% Initialize with a uniform density distribution
+rho = ones(nely, nelx) * volume_fraction;
+rho = max(RHO_MIN, min(RHO_MAX, rho));
+
+% Initialize history struct
+history.iteration = [];
+history.compliance = [];
+history.volume = [];
+history.change = [];
+
+% Start timer
+tic;
+
+% ======================================================================
+% MAIN OPTIMIZATION LOOP
+% ======================================================================
+
+for iter = 1:solver_config.max_iterations
+    fprintf('PTOc Iteration %d\n', iter);
+
+    % 1. Perform Finite Element Analysis (FEA)
+    [U, K_global] = FEA_analysis(nelx, nely, rho, penalty_p, E0, nu, ...
+        problem_def.load_dofs, problem_def.load_vals, problem_def.fixed_dofs);
+
+    % 2. Compute element-wise compliance
+    element_compliance = compute_compliance(nelx, nely, rho, penalty_p, E0, nu, U);
+
+    % 3. Material redistribution loop
+    remaining_material = target_material;
+    rho_opt_inner = zeros(nely, nelx);
+
+    for inner_iter = 1:MAX_INNER_ITERATIONS
+        % Compute optimal density for the current remaining material
+        rho_opt_iter = material_distribution_PTOc(element_compliance, remaining_material, dist_exp_q, RHO_MIN, RHO_MAX);
+
+        % Sum of density allocated in this inner iteration
+        allocated_density = sum(rho_opt_iter(:));
+
+        % Update remaining material
+        remaining_material = remaining_material - allocated_density;
+
+        % Accumulate the optimal density
+        rho_opt_inner = rho_opt_inner + rho_opt_iter;
+
+        % Stop if the remaining material is negligible
+        if remaining_material < RM_CONVERGENCE_TOL * target_material
+            break;
+        end
+    end
+
+    % 4. Apply density filter
+    rho_filtered = density_filter(rho_opt_inner, filter_radius, nelx, nely, dx, dy);
+
+    % 5. Update density with move limit
+    rho_new = update_density(rho, rho_filtered, move_limit, RHO_MIN, RHO_MAX);
+
+    % 6. Compute convergence metrics
+    change = max(abs(rho_new(:) - rho(:)));
+    compliance = U' * K_global * U;
+    volume = sum(rho_new(:));
+
+    % Store history
+    history.iteration(end+1) = iter;
+    history.compliance(end+1) = compliance;
+    history.volume(end+1) = volume;
+    history.change(end+1) = change;
+
+    % 7. Check for convergence
+    [converged, ~] = check_convergence(rho_new, rho, iter, solver_config.max_iterations, ...
+        CONVERGENCE_TOL, 'PTOc');
+
+    % 8. Plot intermediate results (optional)
+    if solver_config.plot_flag && (mod(iter, solver_config.plot_frequency) == 0 || iter == 1 || converged)
+        figure(1);
+        subplot(2,3,1); imagesc(1-rho_new); colormap(gray); axis equal tight off; title(sprintf('Density (iter %d)', iter));
+        subplot(2,3,2); imagesc(element_compliance); axis equal tight off; colorbar; title('Element Compliance');
+        subplot(2,3,3); plot(history.iteration, history.compliance, 'b-o'); grid on; title('Total Compliance');
+        subplot(2,3,4); plot(history.iteration, history.volume, 'r-*'); grid on; title('Volume');
+        subplot(2,3,5); plot(history.iteration, history.change, 'm-d'); grid on; title('Density Change'); set(gca, 'YScale', 'log');
+        subplot(2,3,6); imagesc(1-rho_filtered); colormap(gray); axis equal tight off; title('Filtered Density');
+        drawnow;
+    end
+
+    % Update density for the next iteration
+    rho = rho_new;
+
+    % Stop if converged
+    if converged
+        fprintf('PTOc algorithm converged after %d iterations.\n', iter);
+        break;
+    end
+end
+
+% Final optimized density
+rho_opt = rho;
+
+% Stop timer
+time_elapsed = toc;
+
+fprintf('Total execution time: %.2f seconds.\n', time_elapsed);
+
+end

@@ -14,71 +14,35 @@ add_lib(pwd);
 % Main
 fprintf('=== Cantilever Beam - PTOc (Compliance minimization) ===\n');
 
-% Mesh parameters
-dx = 1; dy = 1;  % Element size
-
-% Material properties
-E0 = 1.0;        % Young's modulus of solid
-nu = 0.3;        % Poisson's ratio
-p = 3;           % SIMP penalty exponent
-
-% PTOc parameters
-q = 1.0;                % Compliance exponent for material distribution
-r_min = 2.0;            % Filter radius (in element units)
-alpha = 0.3;            % Move limit
-volume_fraction = 0.4;  % Target volume fraction
-max_iter = 300;         % Maximum iterations
-plot_flag = true;       % Show plots
-plot_frequency = 2;     % Frequency new plot
-
 % Boundary conditions for cantilever beam
 [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(false);
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
-% Run PTOc
-tic;
-[rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_fraction, max_iter, plot_flag, plot_frequency);
-time_elapsed = toc;
+% PTOc run
+problem_def.nelx = nelx;
+problem_def.nely = nely;
+problem_def.dx = 1;
+problem_def.dy = 1;
+problem_def.fixed_dofs = fixed_dofs;
+problem_def.load_dofs = load_dofs;
+problem_def.load_vals = load_vals;
+
+ptoc_params.E0 = 1.0;
+ptoc_params.nu = 0.3;
+ptoc_params.volume_fraction = 0.4;
+ptoc_params.penalty = 3.0;        
+ptoc_params.dist_exp = 1.0;       
+ptoc_params.filter_radius = 2.0;  
+ptoc_params.move_limit = 0.3;    
+
+solver_config.max_iterations = 300;
+solver_config.plot_flag = true;
+solver_config.plot_frequency = 2;
+disp('--- Starting PTOc Optimization ---');
+[rho_opt, history, time_elapsed] = run_ptoc_optimization(problem_def, ptoc_params, solver_config);
 
 % Save results
-save('Cantilever_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'time_elapsed');
-
-% Plot final design with compliance
-figure(2);
-figure('Position', [100, 100, 800, 600]);
-subplot(2,2,1);
-imagesc(rho_opt); axis equal tight; colorbar;
-axis xy;
-title(sprintf('Cantilever PTOc Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
-xlabel('x'); ylabel('y');
-
-% Compute compliance field for final design
-[U, K_global] = FEA_analysis(nelx, nely, rho_opt, p, E0, nu, load_dofs, load_vals, fixed_dofs);
-C = compute_compliance(nelx, nely, rho_opt, p, E0, nu, U, K_global);
-subplot(2,2,2);
-imagesc(C); axis equal tight; colorbar;
-axis xy;
-title('Element Compliance');
-xlabel('x'); ylabel('y');
-
-% Convergence history
-subplot(2,2,3);
-plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5);
-grid on; xlabel('Iteration'); ylabel('Total Compliance');
-title('Compliance History');
-
-subplot(2,2,4);
-yyaxis left;
-plot(history.iteration, history.volume./(nelx*nely), 'r-*', 'LineWidth', 1.5);
-ylabel('Volume Fraction');
-yyaxis right;
-semilogy(history.iteration, history.change, 'g-s', 'LineWidth', 1.5);
-ylabel('Density Change (log)');
-grid on; xlabel('Iteration');
-title('Volume and Change History');
-legend('Volume Fraction', 'Density Change', 'Location', 'best');
-
-sgtitle('Cantilever Beam - PTOc Results');
+save('Cantilever_PTOc_results.mat', 'rho_opt', 'history', 'time_elapsed', 'problem_def', 'ptoc_params', 'solver_config');
 
 % Save figure
 saveas(gcf, 'Cantilever_PTOc_results.png');
