@@ -159,8 +159,6 @@ for iter = 1:max_iter
     end
 end
 
-% Final optimized density
-rho_opt = rho;
 
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');
