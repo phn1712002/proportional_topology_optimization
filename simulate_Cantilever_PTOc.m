@@ -48,6 +48,7 @@ figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;
+axis xy;
 title(sprintf('Cantilever PTOc Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -56,6 +57,7 @@ xlabel('x'); ylabel('y');
 C = compute_compliance(nelx, nely, rho_opt, p, E0, nu, U, K_global);
 subplot(2,2,2);
 imagesc(C); axis equal tight; colorbar;
+axis xy;
 title('Element Compliance');
 xlabel('x'); ylabel('y');
 

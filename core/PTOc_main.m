@@ -125,8 +125,10 @@ for iter = 1:max_iter
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
+        axis xy;
         subplot(2,3,2);
         imagesc(C); axis equal tight; colorbar; title('Element Compliance');
+        axis xy;
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Total Compliance');
         subplot(2,3,4);
@@ -135,6 +137,7 @@ for iter = 1:max_iter
         semilogy(history.iteration, history.change, 'm-d'); grid on; title('Density Change (log)');
         subplot(2,3,6);
         imagesc(rho_filtered); axis equal tight; colorbar; title('Filtered Density');
+        axis xy;
         drawnow;
     end
     
@@ -155,6 +158,7 @@ rho_opt = rho;
 if plot_flag
     figure(2);
     imagesc(rho_opt); axis equal tight; colorbar;
+    axis xy;
     title(sprintf('Final PTOc Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
     xlabel('x'); ylabel('y');
 end

@@ -133,8 +133,10 @@ for iter = 1:max_iter
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
+        axis xy;
         subplot(2,3,2);
         imagesc(sigma_vm); axis equal tight; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
+        axis xy;
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Compliance');
         subplot(2,3,4);
@@ -168,6 +170,7 @@ figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;
+axis xy;
 title(sprintf('L-bracket PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -176,6 +179,7 @@ xlabel('x'); ylabel('y');
 sigma_vm = compute_stress(nelx, nely, rho_opt, p, E0, nu, U);
 subplot(2,2,2);
 imagesc(sigma_vm); axis equal tight; colorbar;
+axis xy;
 title(sprintf('Von Mises Stress (max = %.2f)', max(sigma_vm(:))));
 xlabel('x'); ylabel('y');
 

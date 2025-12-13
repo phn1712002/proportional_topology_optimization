@@ -49,6 +49,7 @@ figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;
+axis xy;
 title(sprintf('Cantilever PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -57,6 +58,7 @@ xlabel('x'); ylabel('y');
 sigma_vm = compute_stress(nelx, nely, rho_opt, p, E0, nu, U);
 subplot(2,2,2);
 imagesc(sigma_vm); axis equal tight; colorbar;
+axis xy;
 title(sprintf('Von Mises Stress (max = %.2f)', max(sigma_vm(:))));
 xlabel('x'); ylabel('y');
 

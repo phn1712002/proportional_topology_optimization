@@ -144,8 +144,10 @@ for iter = 1:max_iter
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
+        axis xy;
         subplot(2,3,2);
         imagesc(sigma_vm); axis equal tight; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
+        axis xy;
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Compliance');
         subplot(2,3,4);
@@ -175,6 +177,7 @@ rho_opt = rho;
 if plot_flag
     figure(2);
     imagesc(rho_opt); axis equal tight; colorbar;
+    axis xy;
     title(sprintf('Final PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
     xlabel('x'); ylabel('y');
 end
