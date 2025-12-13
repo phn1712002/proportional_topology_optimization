@@ -29,7 +29,7 @@ sigma_allow = 120; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
-plot_frequency = 10; % Frequency new plot
+plot_frequency = 2; % Frequency new plot
 
 % Boundary conditions for L-bracket
 [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
