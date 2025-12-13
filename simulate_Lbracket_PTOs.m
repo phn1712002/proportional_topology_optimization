@@ -132,9 +132,9 @@ for iter = 1:max_iter
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
-        imagesc(rho_new'); axis equal tight; axis xy; colorbar; title(sprintf('Density (iter %d)', iter));
+        imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
         subplot(2,3,2);
-        imagesc(sigma_vm'); axis equal tight; axis xy; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
+        imagesc(sigma_vm); axis equal tight; colorbar; title(sprintf('Stress (max=%.2f)', sigma_max));
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Compliance');
         subplot(2,3,4);
@@ -167,7 +167,7 @@ save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q'
 figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
-imagesc(rho_opt'); axis equal tight; axis xy; colorbar;
+imagesc(rho_opt); axis equal tight; colorbar;
 title(sprintf('L-bracket PTOs Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -175,7 +175,7 @@ xlabel('x'); ylabel('y');
 [U, K_global] = FEA_analysis(nelx, nely, rho_opt, p, E0, nu, load_dofs, load_vals, fixed_dofs);
 sigma_vm = compute_stress(nelx, nely, rho_opt, p, E0, nu, U);
 subplot(2,2,2);
-imagesc(sigma_vm'); axis equal tight; axis xy; colorbar;
+imagesc(sigma_vm); axis equal tight; colorbar;
 title(sprintf('Von Mises Stress (max = %.2f)', max(sigma_vm(:))));
 xlabel('x'); ylabel('y');
 

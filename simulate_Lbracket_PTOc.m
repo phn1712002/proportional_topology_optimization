@@ -118,9 +118,9 @@ for iter = 1:max_iter
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
-        imagesc(rho_new'); axis equal tight; axis xy; colorbar; title(sprintf('Density (iter %d)', iter));
+        imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
         subplot(2,3,2);
-        imagesc(C'); axis equal tight; axis xy; colorbar; title('Element Compliance');
+        imagesc(C); axis equal tight; colorbar; title('Element Compliance');
         subplot(2,3,3);
         plot(history.iteration, history.compliance, 'b-o'); grid on; title('Total Compliance');
         subplot(2,3,4);
@@ -128,7 +128,7 @@ for iter = 1:max_iter
         subplot(2,3,5);
         semilogy(history.iteration, history.change, 'm-d'); grid on; title('Density Change (log)');
         subplot(2,3,6);
-        imagesc(rho_filtered'); axis equal tight; axis xy; colorbar; title('Filtered Density');
+        imagesc(rho_filtered); axis equal tight; colorbar; title('Filtered Density');
         drawnow;
     end
     
@@ -152,7 +152,7 @@ save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q'
 figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
-imagesc(rho_opt'); axis equal tight; axis xy; colorbar;
+imagesc(rho_opt); axis equal tight; colorbar;
 title(sprintf('L-bracket PTOc Design (Volume = %.2f%%)', 100*sum(rho_opt(:))/(nelx*nely)));
 xlabel('x'); ylabel('y');
 
@@ -160,7 +160,7 @@ xlabel('x'); ylabel('y');
 [U, K_global] = FEA_analysis(nelx, nely, rho_opt, p, E0, nu, load_dofs, load_vals, fixed_dofs);
 C = compute_compliance(nelx, nely, rho_opt, p, E0, nu, U, K_global);
 subplot(2,2,2);
-imagesc(C'); axis equal tight; axis xy; colorbar;
+imagesc(C); axis equal tight; colorbar;
 title('Element Compliance');
 xlabel('x'); ylabel('y');
 
