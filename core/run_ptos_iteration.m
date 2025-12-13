@@ -158,8 +158,8 @@ for iter = 1:max_iter
         subplot(2,3,5);
         plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5); 
         grid on; title('Max Stress'); xlabel('Iteration'); ylabel('Max Stress');
-        yline(sigma_allow*(1-tau), '--', 'Lower bound'); 
-        yline(sigma_allow*(1+tau), '--', 'Upper bound');
+        yline(sigma_allow*(1-tau), 'r--', ''); 
+        yline(sigma_allow*(1+tau), 'r--', '');
         yline(sigma_allow, 'k-', 'Allowable stress');
         
         subplot(2,3,6);
