@@ -5,12 +5,13 @@
 %
 %   Results are saved to 'MBB_PTOs_results.mat' and figures are generated.
 
-% Main script with auto-detection of objective function type
+% Clear all
 clear; close all; clc;
 
 % Add current directory to path
 add_lib(pwd);
 
+% Main
 fprintf('=== MBB Beam - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
@@ -29,20 +30,22 @@ sigma_allow = 80; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
+plot_frequency = 2;     % Frequency new plot
 
 % Boundary conditions for MBB beam (half symmetry)
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot_flag);
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(false);
 TM_init = 0.4 * nelx * nely; % Initial target material (40% volume fraction)
 
 % Run PTOs
 tic;
-[rho_opt, history] = PTOs_main(nelx, nely, p, q, r_min, alpha, sigma_allow, tau, max_iter, TM_init, plot_flag);
+[rho_opt, history] = PTOs_main(nelx, nely, p, q, r_min, alpha, sigma_allow, tau, max_iter, TM_init, plot_flag, plot_frequency);
 time_elapsed = toc;
 
 % Save results
 save('MBB_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'time_elapsed');
 
 % Plot final design with stress
+figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;

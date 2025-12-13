@@ -1,4 +1,4 @@
-function [rho_opt, history] = PTOs_main(nelx, nely, p, q, r_min, alpha, sigma_allow, tau, max_iter, TM_init, plot_flag)
+function [rho_opt, history] = PTOs_main(nelx, nely, p, q, r_min, alpha, sigma_allow, tau, max_iter, TM_init, plot_flag, plot_frequency)
 % PTOS_MAIN Main function for stress-constrained Proportional Topology Optimization
 %
 %   [RHO_OPT, HISTORY] = PTOS_MAIN(NELX, NELY, P, Q, R_MIN, ALPHA, SIGMA_ALLOW, TAU, MAX_ITER, TM_INIT, PLOT_FLAG)
@@ -24,6 +24,9 @@ function [rho_opt, history] = PTOs_main(nelx, nely, p, q, r_min, alpha, sigma_al
 %   [rho, hist] = PTOs_main(60, 30, 3, 1, 1.5, 0.3, 100, 0.05, 200, 0.4, true);
 
 % Default parameters
+if nargin < 12
+    plot_frequency = 10;
+end
 if nargin < 11
     plot_flag = true;
 end
@@ -137,7 +140,7 @@ for iter = 1:max_iter
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOs', sigma_max, sigma_allow, tau);
     
     % 9. Plot intermediate results
-    if plot_flag && (mod(iter, 10) == 0 || iter == 1 || converged)
+    if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));

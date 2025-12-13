@@ -25,7 +25,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
 
     % Set default plot_flag to false if not provided
     if nargin < 1
-        plot_flag = false;
+        plot_flag = true;
     end
 
     % --- CONSTANTS: SPECIFIC DIMENSIONS ---

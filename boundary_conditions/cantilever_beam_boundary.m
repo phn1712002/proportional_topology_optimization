@@ -19,7 +19,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
 
     % Set default value for plot_flag if not provided.
     if nargin < 1
-        plot_flag = false;
+        plot_flag = true;
     end
 
     % ---- PROBLEM CONFIGURATION ----

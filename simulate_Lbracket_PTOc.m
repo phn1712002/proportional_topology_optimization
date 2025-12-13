@@ -4,12 +4,13 @@
 %
 %   Results are saved to 'Lbracket_PTOc_results.mat' and figures are generated.
 
-% Main script with auto-detection of objective function type
+% Clear all
 clear; close all; clc;
 
 % Add current directory to path
 add_lib(pwd);
 
+% Main
 fprintf('=== L-bracket - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
@@ -21,15 +22,16 @@ nu = 0.3;        % Poisson's ratio
 p = 3;           % SIMP penalty exponent
 
 % PTOc parameters
-q = 1.0;         % Compliance exponent for material distribution
-r_min = 2.0;     % Filter radius (in element units)
-alpha = 0.3;     % Move limit
-volume_fraction = 0.3; % Target volume fraction (adjusted for cutout)
-max_iter = 300;  % Maximum iterations
-plot_flag = true; % Show plots
+q = 1.0;                % Compliance exponent for material distribution
+r_min = 2.0;            % Filter radius (in element units)
+alpha = 0.3;            % Move limit
+volume_fraction = 0.3;  % Target volume fraction (adjusted for cutout)
+max_iter = 300;         % Maximum iterations
+plot_flag = true;       % Show plots
+plot_frequency = 2;     % Frequency new plot
 
 % Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(plot_flag);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Create initial density with cutout (void region)
@@ -108,7 +110,7 @@ for iter = 1:max_iter
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
     
     % 8. Plot intermediate results
-    if plot_flag && (mod(iter, 20) == 0 || iter == 1 || converged)
+    if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
@@ -142,6 +144,7 @@ rho_opt = rho;
 save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'cutout_x', 'cutout_y', 'time_elapsed');
 
 % Plot final design with compliance
+figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;

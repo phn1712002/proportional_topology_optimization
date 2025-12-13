@@ -5,12 +5,13 @@
 %
 %   Results are saved to 'Cantilever_PTOc_results.mat' and figures are generated.
 
-% Main script with auto-detection of objective function type
+% Clear all
 clear; close all; clc;
 
 % Add current directory to path
 add_lib(pwd);
 
+% Main
 fprintf('=== Cantilever Beam - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
@@ -22,26 +23,28 @@ nu = 0.3;        % Poisson's ratio
 p = 3;           % SIMP penalty exponent
 
 % PTOc parameters
-q = 1.0;         % Compliance exponent for material distribution
-r_min = 2.0;     % Filter radius (in element units)
-alpha = 0.3;     % Move limit
-volume_fraction = 0.4; % Target volume fraction
-max_iter = 300;  % Maximum iterations
-plot_flag = true; % Show plots
+q = 1.0;                % Compliance exponent for material distribution
+r_min = 2.0;            % Filter radius (in element units)
+alpha = 0.3;            % Move limit
+volume_fraction = 0.4;  % Target volume fraction
+max_iter = 300;         % Maximum iterations
+plot_flag = true;       % Show plots
+plot_frequency = 2;     % Frequency new plot
 
 % Boundary conditions for cantilever beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(plot_flag);
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(false);
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Run PTOc
 tic;
-[rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_fraction, max_iter, plot_flag);
+[rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_fraction, max_iter, plot_flag, plot_frequency);
 time_elapsed = toc;
 
 % Save results
 save('Cantilever_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'time_elapsed');
 
 % Plot final design with compliance
+figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;

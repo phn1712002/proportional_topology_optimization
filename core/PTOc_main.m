@@ -1,4 +1,4 @@
-function [rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_fraction, max_iter, plot_flag)
+function [rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_fraction, max_iter, plot_flag, plot_frequency)
 % PTOC_MAIN Main function for compliance minimization Proportional Topology Optimization
 %
 %   [RHO_OPT, HISTORY] = PTOC_MAIN(NELX, NELY, P, Q, R_MIN, ALPHA, VOLUME_FRACTION, MAX_ITER, PLOT_FLAG)
@@ -22,6 +22,12 @@ function [rho_opt, history] = PTOc_main(nelx, nely, p, q, r_min, alpha, volume_f
 %   [rho, hist] = PTOc_main(60, 30, 3, 1, 1.5, 0.3, 0.4, 200, true);
 
 % Default parameters
+if nargin < 11
+    plot_frequency = 10;
+end
+if nargin < 10
+    plot_flag = true;
+end
 if nargin < 9
     plot_flag = true;
 end
@@ -115,7 +121,7 @@ for iter = 1:max_iter
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
     
     % 8. Plot intermediate results
-    if plot_flag && (mod(iter, 10) == 0 || iter == 1 || converged)
+    if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));

@@ -4,12 +4,13 @@
 %
 %   Results are saved to 'Lbracket_PTOs_results.mat' and figures are generated.
 
-% Main script with auto-detection of objective function type
+% Clear all
 clear; close all; clc;
 
 % Add current directory to path
 add_lib(pwd);
 
+% Main
 fprintf('=== L-bracket - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
@@ -29,9 +30,10 @@ sigma_allow = 120; % Allowable von Mises stress
 tau = 0.05;      % Stress tolerance band
 max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
+plot_frequency = 2; % Frequency new plot
 
 % Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(plot_flag);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
 TM_init = 0.3 * nelx * nely; % Initial target material (30% volume fraction due to cutout)
 
 % Create initial density with cutout (void region)
@@ -134,7 +136,7 @@ for iter = 1:max_iter
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOs', sigma_max, sigma_allow, tau);
     
     % 9. Plot intermediate results
-    if plot_flag && (mod(iter, 20) == 0 || iter == 1 || converged)
+    if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
         figure(1);
         subplot(2,3,1);
         imagesc(rho_new); axis equal tight; colorbar; title(sprintf('Density (iter %d)', iter));
@@ -169,6 +171,7 @@ rho_opt = rho;
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y', 'time_elapsed');
 
 % Plot final design with stress
+figure(2);
 figure('Position', [100, 100, 800, 600]);
 subplot(2,2,1);
 imagesc(rho_opt); axis equal tight; colorbar;

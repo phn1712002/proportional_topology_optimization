@@ -23,7 +23,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
 
     % Set default plot_flag to false if not provided
     if nargin < 1
-        plot_flag = false;
+        plot_flag = true;
     end
 
 %% PROBLEM CONFIGURATION
