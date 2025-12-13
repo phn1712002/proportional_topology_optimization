@@ -16,22 +16,28 @@ The implementation follows the SIMP (Solid Isotropic Material with Penalization)
 ```
 .
 ├── add_lib.m                   # Utility to add all subfolders to MATLAB path
-├── run_all_simulations.m       # Master script to run all simulations
-├── run_benchmarks.m            # Benchmark comparison script
 ├── simulate_*.m                # Individual simulation scripts (6 files)
-├── general_rules.md            # This documentation file
+├── readme.md                   # This documentation file
 ├── test_implementation.m       # Testing
-└── core/                       # Core algorithm modules
-    ├── FEA_analysis.m          # Finite element analysis
-    ├── compute_stress.m        # Von Mises stress computation
-    ├── compute_compliance.m    # Element compliance computation
-    ├── density_filter.m        # Cone-shaped density filter
-    ├── material_distribution_PTOs.m  # Material distribution for PTOs
-    ├── material_distribution_PTOc.m  # Material distribution for PTOc
-    ├── update_density.m        # Density update with move limit
-    ├── check_convergence.m     # Convergence checking
-    ├── PTOs_main.m            # Main PTOs algorithm
-    └── PTOc_main.m            # Main PTOc algorithm
+├── boundary_conditions/        # Boundary condition definitions
+│   ├── cantilever_beam_boundary.m       # Cantilever beam boundary conditions
+│   ├── mbb_beam_boundary.m     # MBB beam boundary conditions
+│   ├── l_bracket_boundary.m    # L-bracket boundary conditions
+│   └── visualize_boundary_conditions.m  # Visualization utility
+├── core/                       # Core algorithm modules
+│   ├── FEA_analysis.m          # Finite element analysis
+│   ├── compute_stress.m        # Von Mises stress computation
+│   ├── compute_compliance.m    # Element compliance computation
+│   ├── density_filter.m        # Cone-shaped density filter
+│   ├── material_distribution_PTOs.m  # Material distribution for PTOs
+│   ├── material_distribution_PTOc.m  # Material distribution for PTOc
+│   ├── update_density.m        # Density update with move limit
+│   ├── check_convergence.m     # Convergence checking
+│   ├── PTOs_main.m            # Main PTOs algorithm
+│   └── PTOc_main.m            # Main PTOc algorithm
+└── docs/                       # Detailed documentation
+    ├── docs-ptos.md           # PTOs algorithm documentation
+    └── docs-ptoc.md           # PTOc algorithm documentation
 ```
 
 ---
@@ -77,11 +83,20 @@ simulate_Lbracket_PTOs;
 simulate_Lbracket_PTOc;
 ```
 
-### 4. Comprehensive Run
+### 4. Using Boundary Condition Functions
+
+The project now includes dedicated boundary condition functions:
 
 ```matlab
-run_all_simulations;  % Runs all 6 cases with quick mode (50 iterations)
-% Set quick_run = false in the script for full simulations (300 iterations)
+% Example: Cantilever beam with visualization
+nelx = 60; nely = 30;
+[fixed_dofs, load_dofs, load_vals] = cantilever_beam_boundary(nelx, nely, true);
+
+% Example: MBB beam
+[fixed_dofs, load_dofs, load_vals] = mbb_beam_boundary(nelx, nely);
+
+% Example: L-bracket
+[fixed_dofs, load_dofs, load_vals] = l_bracket_boundary(nelx, nely);
 ```
 
 ---
@@ -146,6 +161,17 @@ Example output files:
 
 ---
 
+## 📚 Detailed Documentation
+
+The project includes comprehensive documentation in the `docs/` directory:
+
+- **`docs-ptos.md`**: Detailed documentation of the PTOs algorithm with flowchart, parameters, and implementation details
+- **`docs-ptoc.md`**: Detailed documentation of the PTOc algorithm
+
+These documents provide in-depth explanations of the algorithms, mathematical formulations, and implementation considerations.
+
+---
+
 ## 🔍 Code Quality and Standards
 
 ### Naming Conventions
@@ -162,6 +188,7 @@ Example output files:
 - Each module has a single responsibility
 - Functions are short (< 100 lines)
 - Clear separation between FEA, optimization, and visualization
+- Dedicated boundary condition functions for different problem types
 
 ---
 
@@ -191,7 +218,7 @@ Compare with standard topology optimization results:
 ### Adding New Problems
 1. Create a new simulation script following the pattern of `simulate_*.m`
 2. Define mesh dimensions (`nelx`, `nely`)
-3. Set boundary conditions (`fixed_dofs`, `load_dofs`)
+3. Set boundary conditions using functions from `boundary_conditions/` or create new ones
 4. Choose algorithm parameters (`p`, `q`, `r_min`, etc.)
 5. Call `PTOs_main` or `PTOc_main`
 
@@ -233,7 +260,7 @@ Compare with standard topology optimization results:
 
 ---
 
-## 📚 References
+## 📖 References
 
 1. **Original PTO Algorithm**: 
    - Proportional Topology Optimization (PTO) for stress-constrained and compliance minimization problems

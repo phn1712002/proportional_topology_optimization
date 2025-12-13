@@ -3,10 +3,6 @@
 %   This script sets up the MBB beam (half symmetry) and runs the
 %   compliance minimization PTO algorithm.
 %
-%   Mesh: 120 x 40 elements
-%   Boundary conditions: symmetry on left, roller on right bottom corner,
-%   point load at top right corner.
-%
 %   Results are saved to 'MBB_PTOc_results.mat' and figures are generated.
 
 % Main script with auto-detection of objective function type
@@ -18,8 +14,6 @@ add_lib(pwd);
 fprintf('=== MBB Beam - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
-nelx = 120;      % Number of elements in x-direction
-nely = 40;       % Number of elements in y-direction
 dx = 1; dy = 1;  % Element size
 
 % Material properties
@@ -36,26 +30,7 @@ max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
 
 % Boundary conditions for MBB beam (half symmetry)
-% Left edge: symmetry (fixed in x-direction, free in y-direction)
-% Right bottom corner: roller support (fixed in y-direction)
-% Load: point load at top right corner (downward)
-
-% Fixed DOFs: left edge x-direction
-fixed_dofs_x = 1:2:2*(nely+1); % x-dofs of left edge
-% Right bottom corner y-direction
-right_bottom_node = (nelx+1)*(nely+1);
-fixed_dofs_y = 2*right_bottom_node; % y-dof of right bottom corner
-fixed_dofs = [fixed_dofs_x, fixed_dofs_y];
-
-% Load: point load at top right corner (downward)
-top_right_node = (nelx+1)*(nely+1) - nely; % top right corner
-load_dof = 2*top_right_node; % y-direction
-load_dofs = load_dof;
-load_vals = -1; % Downward load
-
-fprintf('Mesh: %d x %d elements\n', nelx, nely);
-fprintf('Fixed DOFs: %d\n', length(fixed_dofs));
-fprintf('Load at node %d (dof %d) = %.2f\n', top_right_node, load_dof, load_vals);
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot_flag);
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Run PTOc

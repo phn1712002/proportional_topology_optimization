@@ -2,9 +2,6 @@
 %
 %   This script sets up the L-bracket and runs the compliance minimization PTO algorithm.
 %
-%   Mesh: 100 x 40 elements with a rectangular cutout (40x40) at top-left corner.
-%   Boundary conditions: fixed top edge, point load at middle of right edge.
-%
 %   Results are saved to 'Lbracket_PTOc_results.mat' and figures are generated.
 
 % Main script with auto-detection of objective function type
@@ -16,13 +13,7 @@ add_lib(pwd);
 fprintf('=== L-bracket - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
-nelx = 100;      % Number of elements in x-direction
-nely = 40;       % Number of elements in y-direction
 dx = 1; dy = 1;  % Element size
-
-% Cutout dimensions (top-left corner)
-cutout_x = 40;   % Width of cutout
-cutout_y = 40;   % Height of cutout
 
 % Material properties
 E0 = 1.0;        % Young's modulus of solid
@@ -37,31 +28,14 @@ volume_fraction = 0.3; % Target volume fraction (adjusted for cutout)
 max_iter = 300;  % Maximum iterations
 plot_flag = true; % Show plots
 
+% Boundary conditions for L-bracket
+[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(plot_flag);
+fprintf('Target volume fraction: %.2f\n', volume_fraction);
+
 % Create initial density with cutout (void region)
 rho_init = ones(nely, nelx);
 % Set cutout region to minimum density
 rho_init(1:cutout_y, 1:cutout_x) = 1e-3;
-
-% Boundary conditions for L-bracket
-% Fixed DOFs: top edge (y = nely) - both x and y directions
-fixed_nodes = [];
-for i = 1:(nelx+1)
-    node_id = i*(nely+1); % top edge nodes
-    fixed_nodes = [fixed_nodes, node_id];
-end
-fixed_dofs = [2*fixed_nodes-1, 2*fixed_nodes]; % x and y DOFs
-
-% Load: point load at middle of right edge (horizontal inward)
-mid_right_node = (nelx+1)*(nely+1) - floor(nely/2); % middle of right edge
-load_dof = 2*mid_right_node - 1; % x-direction (horizontal inward)
-load_dofs = load_dof;
-load_vals = -1; % Inward load (negative x)
-
-fprintf('Mesh: %d x %d elements\n', nelx, nely);
-fprintf('Cutout: %d x %d at top-left corner\n', cutout_x, cutout_y);
-fprintf('Fixed DOFs: %d (top edge)\n', length(fixed_dofs));
-fprintf('Load at node %d (dof %d) = %.2f (horizontal inward)\n', mid_right_node, load_dof, load_vals);
-fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Run PTOc with custom initial density
 % We'll create a custom loop similar to PTOc_main but with initial density.

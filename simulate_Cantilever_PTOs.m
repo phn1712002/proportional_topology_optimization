@@ -3,9 +3,6 @@
 %   This script sets up the cantilever beam and runs the
 %   stress-constrained PTO algorithm.
 %
-%   Mesh: 120 x 60 elements
-%   Boundary conditions: fixed left edge, point load at top right corner.
-%
 %   Results are saved to 'Cantilever_PTOs_results.mat' and figures are generated.
 
 % Main script with auto-detection of objective function type
@@ -17,8 +14,6 @@ add_lib(pwd);
 fprintf('=== Cantilever Beam - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
-nelx = 120;      % Number of elements in x-direction
-nely = 60;       % Number of elements in y-direction
 dx = 1; dy = 1;  % Element size
 
 % Material properties
@@ -37,17 +32,7 @@ TM_init = 0.4 * nelx * nely; % Initial target material (40% volume fraction)
 plot_flag = true; % Show plots
 
 % Boundary conditions for cantilever beam
-% Fixed DOFs
-fixed_dofs = 1:2*(nely+1); % All DOFs of left edge nodes
-% Load
-top_right_node = (nelx+1)*(nely+1); % top right corner
-load_dof = 2*top_right_node; % y-direction
-load_dofs = load_dof;
-load_vals = -1; % Downward load
-
-fprintf('Mesh: %d x %d elements\n', nelx, nely);
-fprintf('Fixed DOFs: %d (left edge)\n', length(fixed_dofs));
-fprintf('Load at node %d (dof %d) = %.2f\n', top_right_node, load_dof, load_vals)
+[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(plot_flag);
 
 % Run PTOs
 tic;
