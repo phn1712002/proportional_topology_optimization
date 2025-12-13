@@ -41,7 +41,7 @@ TM_init = 0.4 * nelx * nely; % Start with 40% volume fraction
 rho_init = ones(nely, nelx) * TM_init / (nelx * nely);
 
 % Apply density bounds
-rho_min = 1e-3;
+rho_min = 1e-9;
 rho_max = 1.0;
 rho_init = max(rho_min, min(rho_max, rho_init));
 

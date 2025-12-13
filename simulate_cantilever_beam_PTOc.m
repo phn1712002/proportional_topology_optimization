@@ -32,7 +32,7 @@ plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency of new plots
 
 % Density bounds (consistent with PTOc documentation)
-rho_min = 1e-3;
+rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for cantilever beam
