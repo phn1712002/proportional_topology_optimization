@@ -370,7 +370,6 @@ Phương pháp Proportional Topology Optimization được giới thiệu trong 
 
 **Biyikli, E., & To, A. C. (2015).** *Proportional Topology Optimization: A New Non-Sensitivity Method for Solving Stress Constrained and Minimum Compliance Problems and Its Implementation in MATLAB.* PLoS ONE, 10(12), e0145041, https://doi.org/10.1371/journal.pone.0145041.
 
-- **Link**: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0145041
 - **Tóm tắt**: Bài báo giới thiệu phương pháp PTO không dựa trên độ nhạy, cung cấp thuật toán đơn giản cho cả bài toán tối thiểu hóa độ tuân thủ và bài toán với ràng buộc ứng suất.
 
 ### Lời cảm ơn tác giả
