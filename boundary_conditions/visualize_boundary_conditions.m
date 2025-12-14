@@ -6,7 +6,7 @@ function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_v
 
     % --- DOMAIN VISUALIZATION (NO OUTLINE) ---
     if nargin >= 7 && ~isempty(designer_mask)
-        imagesc([0, nelx], [0, nely], designer_mask');
+        imagesc(designer_mask);
         set(gca, 'YDir', 'normal');
         colormap([0.92, 0.92, 0.92; 1, 1, 1]); % inactive / active
 

@@ -12,7 +12,7 @@ clear; close all; clc;
 % add_lib(pwd); % Uncomment if you have a custom library function
 
 % --- MAIN SCRIPT ---
-fprintf('=== U-Shaped Beam - PTOs (Stress-constrained) ===\n');
+fprintf('=== C-Shaped Beam - PTOs (Stress-constrained) ===\n');
 
 % --- SIMULATION PARAMETERS ---
 
@@ -44,7 +44,7 @@ rho_max = 1.0;
 
 % Load boundary conditions and design domain for U-beam
 % Pass 'false' to prevent the BC function from plotting its own figure
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = u_beam_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = c_beam_boundary(false);
 
 % --- INITIALIZATION FOR OPTIMIZATION ---
 % Create initial density

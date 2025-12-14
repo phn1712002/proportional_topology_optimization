@@ -13,7 +13,7 @@ clear; close all; clc;
 % add_lib(pwd); % Uncomment if you have a lib folder
 
 % --- MAIN SCRIPT ---
-fprintf('=== U-Shaped Beam - PTOc (Compliance minimization) ===\n');
+fprintf('=== C-Shaped Beam - PTOc (Compliance minimization) ===\n');
 
 % --- MESH & MATERIAL PARAMETERS ---
 dx = 1; dy = 1;      % Element size (assuming unit size)
@@ -37,7 +37,7 @@ rho_max = 1.0;          % Maximum density (solid material)
 
 % --- SETUP BOUNDARY CONDITIONS ---
 % Get BCs and design domain from the U-beam function
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = u_beam_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = c_beam_boundary(false);
 
 % --- INITIALIZATION FOR OPTIMIZATION ---
 % Create initial density with cutout (void region)
@@ -59,7 +59,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, conv_tol, designer_mask, 'U-Shaped Beam');
+    rho_min, rho_max, conv_tol, designer_mask, 'C-Shaped Beam');
 
 % --- POST-PROCESSING & SAVING RESULTS ---
 % Compute final metrics
