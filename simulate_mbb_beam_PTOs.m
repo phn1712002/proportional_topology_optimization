@@ -39,7 +39,7 @@ plot_frequency = 2; % Frequency new plot
 
 % Create initial density
 % Start with uniform density at target volume fraction
-TM_init = nelx * nely;
+TM_init = nnz(designer_mask);
 rho_init = ones(nely, nelx);
 
 % Apply density bounds

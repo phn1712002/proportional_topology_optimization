@@ -11,7 +11,7 @@ function [rho_opt, history, converged, iter] = ...
 %                          LOAD_DOFS, LOAD_VALS, FIXED_DOFS, ...
 %                          Q, R_MIN, ALPHA, MAX_ITER, ...
 %                          PLOT_FLAG, PLOT_FREQUENCY, DX, DY, ...
-%                          RHO_MIN, RHO_MAX, CONV_TOL, PROBLEM_NAME)
+%                          RHO_MIN, RHO_MAX, CONV_TOL, DESIGN_MASK, PROBLEM_NAME)
 %   runs the compliance minimization PTOc algorithm for topology optimization.
 %
 % Inputs:
@@ -27,6 +27,7 @@ function [rho_opt, history, converged, iter] = ...
 %   alpha                   - Move limit
 %   max_iter                - Maximum iterations
 %   conv_tol                - Convergence error
+%   design_mask             - Design area matrix
 %   plot_flag               - Whether to show plots (true/false)
 %   plot_frequency          - Frequency of new plots
 %   dx, dy                  - Element size (default: 1, 1)
@@ -53,11 +54,6 @@ history.iteration = [];
 history.compliance = [];
 history.volume = [];
 history.change = [];
-
-% If design_mask not provided, create default (all elements are design region)
-if nargin < 22 || isempty(design_mask)
-    design_mask = ones(nely, nelx);
-end
 
 % Inner loop iterations (hardcoded as in original scripts)
 inner_max = 20;

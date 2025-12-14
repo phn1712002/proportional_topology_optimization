@@ -45,7 +45,7 @@ fprintf('Target volume fraction: %.2f\n', volume_fraction);
 rho_init = ones(nely, nelx);
 
 % Target material (fixed)
-total_area = nelx * nely;
+active_area = nnz(designer_mask);
 TM = volume_fraction * total_area;
 
 % Use rho_init as starting point
