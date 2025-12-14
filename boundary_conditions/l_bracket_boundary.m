@@ -81,7 +81,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     fprintf('Cutout from top-right: %d x %d elements\n', cutout_x, cutout_y);
     fprintf('Fixed DOFs on top of vertical arm (width: %d elements)\n', fixed_width_in_elements);
     fprintf('Load: Distributed vertical force at nodes [%d, %d, %d]\n', load_nodes(1), load_nodes(2), load_nodes(3));
-    fprintf('Load distribution: Even (%.3f each)\n', LOAD_VAL / NUM_LOAD_POINTS);
+    fprintf('Load distribution: Even (%.3f each)\n', LOAD_VAL);
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested
