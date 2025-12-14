@@ -32,9 +32,9 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantile
     nelx = NELX;
     nely = NELY;
 
-    % <<< THÊM VÀO: TẠO DESIGNER MASK >>>
+    % --- DEFINE DESIGN DOMAIN (REVISED) ---
     % For a standard cantilever, the entire domain is active.
-    designer_mask = true(nelx, nely);
+    designer_mask = true(nely, nelx);
 
     % --- NODE AND DOF NUMBERING CONVENTION ---
     % The mesh contains (nelx+1) x (nely+1) nodes.

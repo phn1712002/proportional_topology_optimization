@@ -24,11 +24,11 @@ p = 3;           % SIMP penalty exponent
 
 % PTOc parameters
 q = 2.0;                % Compliance exponent for material distribution
-r_min = 1.25;            % Filter radius (in element units)
+r_min = 1.25;           % Filter radius (in element units)
 alpha = 0.5;            % Move limit
 volume_fraction = 0.4;  % Target volume fraction
 max_iter = 300;         % Maximum iterations
-conv_tol = 1e-4; % Convergence error
+conv_tol = 1e-4;        % Convergence error
 plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency of new plots
 

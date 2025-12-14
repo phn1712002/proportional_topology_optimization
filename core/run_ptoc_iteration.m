@@ -27,7 +27,7 @@ function [rho_opt, history, converged, iter] = ...
 %   alpha                   - Move limit
 %   max_iter                - Maximum iterations
 %   conv_tol                - Convergence error
-%   design_mask             - Design area matrix
+%   design_mask             - Design area matrix (nely x nelx)
 %   plot_flag               - Whether to show plots (true/false)
 %   plot_frequency          - Frequency of new plots
 %   dx, dy                  - Element size (default: 1, 1)
