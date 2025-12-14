@@ -3,7 +3,7 @@ function [rho_opt, history, converged, iter] = ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, problem_name)
+                       rho_min, rho_max, tol_check_convergence, problem_name)
 % RUN_PTOC_ITERATION Execute the main PTOc iteration loop
 %
 %   [RHO_OPT, HISTORY, CONVERGED, ITER] = ...
@@ -11,38 +11,39 @@ function [rho_opt, history, converged, iter] = ...
 %                          LOAD_DOFS, LOAD_VALS, FIXED_DOFS, ...
 %                          Q, R_MIN, ALPHA, MAX_ITER, ...
 %                          PLOT_FLAG, PLOT_FREQUENCY, DX, DY, ...
-%                          RHO_MIN, RHO_MAX, PROBLEM_NAME)
+%                          RHO_MIN, RHO_MAX, TOL_CHECK_CONVERGENCE, PROBLEM_NAME)
 %   runs the compliance minimization PTOc algorithm for topology optimization.
 %
 % Inputs:
-%   rho               - Initial density field (nely x nelx)
-%   TM                - Target material amount (fixed for PTOc)
-%   nelx, nely        - Mesh dimensions
-%   p, E0, nu         - Material properties (SIMP exponent, Young's modulus, Poisson's ratio)
-%   load_dofs         - Degrees of freedom where loads are applied
-%   load_vals         - Corresponding load values
-%   fixed_dofs        - Degrees of freedom with fixed (zero) displacement
-%   q                 - Compliance exponent for material distribution
-%   r_min             - Filter radius (in element units)
-%   alpha             - Move limit
-%   max_iter          - Maximum iterations
-%   plot_flag         - Whether to show plots (true/false)
-%   plot_frequency    - Frequency of new plots
-%   dx, dy            - Element size (default: 1, 1)
-%   rho_min, rho_max  - Density bounds
-%   problem_name      - Name of problem for display (e.g., 'L-Bracket')
+%   rho                     - Initial density field (nely x nelx)
+%   TM                      - Target material amount (fixed for PTOc)
+%   nelx, nely              - Mesh dimensions
+%   p, E0, nu               - Material properties (SIMP exponent, Young's modulus, Poisson's ratio)
+%   load_dofs               - Degrees of freedom where loads are applied
+%   load_vals               - Corresponding load values
+%   fixed_dofs              - Degrees of freedom with fixed (zero) displacement
+%   q                       - Compliance exponent for material distribution
+%   r_min                   - Filter radius (in element units)
+%   alpha                   - Move limit
+%   max_iter                - Maximum iterations
+%   tol_check_convergence   - Tol check stop iter
+%   plot_flag               - Whether to show plots (true/false)
+%   plot_frequency          - Frequency of new plots
+%   dx, dy                  - Element size (default: 1, 1)
+%   rho_min, rho_max        - Density bounds
+%   problem_name            - Name of problem for display (e.g., 'L-Bracket')
 %
 % Outputs:
-%   rho_opt           - Final optimal density field
-%   history           - Structure with iteration history
-%   converged         - Convergence flag (true/false)
-%   iter              - Final iteration number
+%   rho_opt                 - Final optimal density field
+%   history                 - Structure with iteration history
+%   converged               - Convergence flag (true/false)
+%   iter                    - Final iteration number
 %
 % History fields:
-%   iteration         - Iteration numbers
-%   compliance        - Compliance values
-%   volume            - Volume values
-%   change            - Maximum density change values
+%   iteration               - Iteration numbers
+%   compliance              - Compliance values
+%   volume                  - Volume values
+%   change                  - Maximum density change values
 %
 % Note: PTOc maintains fixed target material (TM) throughout optimization,
 % unlike PTOs which adjusts TM based on stress constraints.
@@ -108,7 +109,7 @@ for iter = 1:max_iter
     history.change(end+1) = change;
     
     % 7. Check convergence
-    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOc');
+    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, tol_check_convergence, 'PTOc');
     
     % 8. Plot intermediate results
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)

@@ -3,7 +3,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, problem_name)
+                       rho_min, rho_max, coef_inc_dec, tol_check_convergence, problem_name)
 % RUN_PTOS_ITERATION Execute the main PTOs iteration loop
 %
 %   [RHO_OPT, HISTORY, SIGMA_VM, SIGMA_MAX, CONVERGED, ITER] = ...
@@ -11,45 +11,46 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
 %                          LOAD_DOFS, LOAD_VALS, FIXED_DOFS, ...
 %                          Q, R_MIN, ALPHA, SIGMA_ALLOW, TAU, MAX_ITER, ...
 %                          PLOT_FLAG, PLOT_FREQUENCY, DX, DY, ...
-%                          RHO_MIN, RHO_MAX, COEF_INC_DEC, PROBLEM_NAME)
+%                          RHO_MIN, RHO_MAX, COEF_INC_DEC, TOL_CHECK_CONVERGENCE, PROBLEM_NAME)
 %   runs the stress-constrained PTOs algorithm for topology optimization.
 %
 % Inputs:
-%   rho               - Initial density field (nely x nelx)
-%   TM_init           - Initial target material amount
-%   nelx, nely        - Mesh dimensions
-%   p, E0, nu         - Material properties (SIMP exponent, Young's modulus, Poisson's ratio)
-%   load_dofs         - Degrees of freedom where loads are applied
-%   load_vals         - Corresponding load values
-%   fixed_dofs        - Degrees of freedom with fixed (zero) displacement
-%   q                 - Stress exponent for material distribution
-%   r_min             - Filter radius (in element units)
-%   alpha             - Move limit
-%   sigma_allow       - Allowable von Mises stress
-%   tau               - Stress tolerance band
-%   max_iter          - Maximum iterations
-%   plot_flag         - Whether to show plots (true/false)
-%   plot_frequency    - Frequency of new plots
-%   dx, dy            - Element size (default: 1, 1)
-%   rho_min, rho_max  - Density bounds
-%   coef_inc_dec      - Material increase/decrease coefficient (0->1) (default: 0.05)
-%   problem_name      - Name of problem for display (e.g., 'MBB Beam')
+%   rho                     - Initial density field (nely x nelx)
+%   TM_init                 - Initial target material amount
+%   nelx, nely              - Mesh dimensions
+%   p, E0, nu               - Material properties (SIMP exponent, Young's modulus, Poisson's ratio)
+%   load_dofs               - Degrees of freedom where loads are applied
+%   load_vals               - Corresponding load values
+%   fixed_dofs              - Degrees of freedom with fixed (zero) displacement
+%   q                       - Stress exponent for material distribution
+%   r_min                   - Filter radius (in element units)
+%   alpha                   - Move limit
+%   sigma_allow             - Allowable von Mises stress
+%   tau                     - Stress tolerance band
+%   max_iter                - Maximum iterations
+%   tol_check_convergence   - Tol check stop iter
+%   plot_flag               - Whether to show plots (true/false)
+%   plot_frequency          - Frequency of new plots
+%   dx, dy                  - Element size (default: 1, 1)
+%   rho_min, rho_max        - Density bounds
+%   coef_inc_dec            - Material increase/decrease coefficient (0->1) (default: 0.05)
+%   problem_name            - Name of problem for display (e.g., 'MBB Beam')
 %
 % Outputs:
-%   rho_opt           - Final optimal density field
-%   history           - Structure with iteration history
-%   sigma_vm          - Final von Mises stress field
-%   sigma_max         - Final maximum von Mises stress
-%   converged         - Convergence flag (true/false)
-%   iter              - Final iteration number
+%   rho_opt                 - Final optimal density field
+%   history                 - Structure with iteration history
+%   sigma_vm                - Final von Mises stress field
+%   sigma_max               - Final maximum von Mises stress
+%   converged               - Convergence flag (true/false)
+%   iter                    - Final iteration number
 %
 % History fields:
-%   iteration         - Iteration numbers
-%   compliance        - Compliance values
-%   volume            - Volume values
-%   sigma_max         - Maximum stress values
-%   TM                - Target material values
-%   change            - Maximum density change values
+%   iteration               - Iteration numbers
+%   compliance              - Compliance values
+%   volume                  - Volume values
+%   sigma_max               - Maximum stress values
+%   TM                      - Target material values
+%   change                  - Maximum density change values
 
 % Initialize history
 history.iteration = [];
@@ -74,11 +75,11 @@ for iter = 1:max_iter
     sigma_max = max(sigma_vm(:));
     
     % 3. Adjust target material based on stress constraint
-    if sigma_max > (1 + tau) * sigma_allow
+    if sigma_max >= (1 + tau) * sigma_allow
         % Too much stress → increase material
         TM_init = TM_init * (1 + coef_inc_dec);
-        fprintf('  Stress %.3f > allowable band → increase TM to %.4f\n', sigma_max, TM_init);
-    elseif sigma_max < (1 - tau) * sigma_allow
+        fprintf('  Stress %.3f > allowable band → increase TM to %.4f\n', sigma_max, TM_init);  
+    else
         % Too little stress → decrease material
         TM_init = TM_init * (1 - coef_inc_dec);
         fprintf('  Stress %.3f < allowable band → decrease TM to %.4f\n', sigma_max, TM_init);
@@ -128,7 +129,7 @@ for iter = 1:max_iter
     history.change(end+1) = change;
     
     % 8. Check convergence
-    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, 1e-3, 'PTOs', sigma_max, sigma_allow, tau);
+    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, tol_check_convergence, 'PTOs', sigma_max, sigma_allow, tau);
     
     % 9. Plot intermediate results
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)

@@ -29,6 +29,7 @@ sigma_allow = 1.08;     % Allowable von Mises stress
 tau = 0.05;             % Stress tolerance band
 coef_inc_dec = 0.05;    % Material increase/decrease coefficient (0->1)
 max_iter = 300;         % Maximum iterations
+tol_check_convergence = 1e-3; % Tol stop iter
 plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency new plot
 
@@ -41,7 +42,7 @@ rho_max = 1.0;
 
 % Create initial density with cutout (void region)
 % Note: FEA_analysis expects rho to be nely x nelx
-rho_init = ones(nely, nelx) * 0.5; % Start with 50% density
+rho_init = ones(nely, nelx);
 % Set cutout region to minimum density (top-right corner)
 cutout_x_start = nelx - cutout_x + 1;
 cutout_y_start = nely - cutout_y + 1;
@@ -54,7 +55,7 @@ rho_init = max(rho_min, min(rho_max, rho_init));
 total_area = nelx * nely;
 cutout_area = cutout_x * cutout_y;
 active_area = total_area - cutout_area;
-TM_init = 0.4 * active_area; % Start with 40% of active area
+TM_init = active_area;
 
 % Use rho_init as starting point
 rho = rho_init;
@@ -65,7 +66,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, 'L-bracket');
+                       rho_min, rho_max, coef_inc_dec, tol_check_convergence, 'L-bracket');
 
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');

@@ -26,8 +26,9 @@ p = 3;           % SIMP penalty exponent
 q = 2.0;                % Compliance exponent for material distribution
 r_min = 1.25;            % Filter radius (in element units)
 alpha = 0.5;            % Move limit
-volume_fraction = 0.4;  % Target volume fraction
+volume_fraction = 0.1;  % Target volume fraction
 max_iter = 300;         % Maximum iterations
+tol_check_convergence = 1e-3; % Tol stop iter
 plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency of new plots
 
@@ -41,7 +42,7 @@ fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Create initial density
 % Note: FEA_analysis expects rho to be nely x nelx
-rho_init = ones(nely, nelx) * volume_fraction;
+rho_init = ones(nely, nelx);
 
 % Target material (fixed)
 total_area = nelx * nely;
@@ -60,7 +61,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, 'MBB Beam');
+    rho_min, rho_max, tol_check_convergence, 'MBB Beam');
 
 % Compute final metrics
 final_compliance = history.compliance(end);
