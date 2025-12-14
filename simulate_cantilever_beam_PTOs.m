@@ -30,7 +30,7 @@ sigma_allow = 1.08; % Allowable von Mises stress
 tau = 0.05;         % Stress tolerance band
 coef_inc_dec = 0.05;% Material increase/decrease coefficient (0->1)
 max_iter = 200;     % Maximum iterations 
-tol_check_convergence = 1e-3; % Tol stop iter
+conv_tol = 1e-1; % Convergence error
 plot_flag = true;   % Show plots
 plot_frequency = 2; % Frequency new plot
 
@@ -56,7 +56,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, tol_check_convergence, 'Cantilever Beam');
+                       rho_min, rho_max, coef_inc_dec, conv_tol, 'Cantilever Beam');
 
 % Save results
 save('cantilever_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');

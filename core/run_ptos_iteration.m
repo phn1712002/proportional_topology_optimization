@@ -3,7 +3,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, tol_check_convergence, problem_name)
+                       rho_min, rho_max, coef_inc_dec, conv_tol, problem_name)
 % RUN_PTOS_ITERATION Execute the main PTOs iteration loop
 %
 %   [RHO_OPT, HISTORY, SIGMA_VM, SIGMA_MAX, CONVERGED, ITER] = ...
@@ -11,7 +11,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
 %                          LOAD_DOFS, LOAD_VALS, FIXED_DOFS, ...
 %                          Q, R_MIN, ALPHA, SIGMA_ALLOW, TAU, MAX_ITER, ...
 %                          PLOT_FLAG, PLOT_FREQUENCY, DX, DY, ...
-%                          RHO_MIN, RHO_MAX, COEF_INC_DEC, TOL_CHECK_CONVERGENCE, PROBLEM_NAME)
+%                          RHO_MIN, RHO_MAX, COEF_INC_DEC, CONV_TOL, PROBLEM_NAME)
 %   runs the stress-constrained PTOs algorithm for topology optimization.
 %
 % Inputs:
@@ -28,7 +28,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
 %   sigma_allow             - Allowable von Mises stress
 %   tau                     - Stress tolerance band
 %   max_iter                - Maximum iterations
-%   tol_check_convergence   - Tol check stop iter
+%   conv_tol                - Convergence error
 %   plot_flag               - Whether to show plots (true/false)
 %   plot_frequency          - Frequency of new plots
 %   dx, dy                  - Element size (default: 1, 1)
@@ -129,7 +129,7 @@ for iter = 1:max_iter
     history.change(end+1) = change;
     
     % 8. Check convergence
-    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, tol_check_convergence, 'PTOs', sigma_max, sigma_allow, tau);
+    [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, conv_tol, 'PTOs', sigma_max, sigma_allow, tau);
     
     % 9. Plot intermediate results
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)

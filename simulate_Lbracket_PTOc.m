@@ -28,7 +28,7 @@ r_min = 1.25;            % Filter radius (in element units)
 alpha = 0.5;            % Move limit
 volume_fraction = 0.1;  % Target volume fraction (adjusted for cutout)
 max_iter = 300;         % Maximum iterations
-tol_check_convergence = 1e-3; % Tol stop iter
+conv_tol = 1e-1; % Convergence error
 plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency of new plots
 
@@ -70,7 +70,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, tol_check_convergence, 'L-Bracket');
+    rho_min, rho_max, conv_tol, 'L-Bracket');
 
 % Compute final metrics
 final_compliance = history.compliance(end);
