@@ -37,13 +37,11 @@ end
 C = max(C, 1e-12);
 
 % Bisection parameters
-LOWER_BOUND = 0;          % Lower bound for Lagrange multiplier
-UPPER_BOUND = 1e9;        % Upper bound for Lagrange multiplier
 TOLERANCE = 1e-6;         % Relative tolerance for bisection convergence
 
 % Initialize bisection bounds
-l1 = LOWER_BOUND;
-l2 = UPPER_BOUND;
+l1 = 0;
+l2 = max(C(:)) / (rho_min^q);
 
 % Bisection loop to find Lagrange multiplier λ
 while (l2 - l1) / (l1 + l2) > TOLERANCE
