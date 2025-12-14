@@ -31,7 +31,7 @@ coef_inc_dec = 0.05;    % Material increase/decrease coefficient (0->1)
 max_iter = 300;         % Maximum iterations
 conv_tol = 1e-4; % Convergence error
 plot_flag = true;       % Show plots
-plot_frequency =10;     % Frequency new plot
+plot_frequency = 2;     % Frequency new plot
 
 % Density bounds
 rho_min = 1e-9;
@@ -43,13 +43,13 @@ rho_max = 1.0;
 % Create initial density with cutout (void region)
 % Note: FEA_analysis expects rho to be nely x nelx
 rho_init = ones(nely, nelx);
-% Set cutout region to minimum density (top-right corner)
+rho_init = max(rho_min, min(rho_max, rho_init));
+% Set cutout region
+design_mask = ones(nely, nelx);
 cutout_x_start = nelx - cutout_x + 1;
 cutout_y_start = nely - cutout_y + 1;
-rho_init(cutout_y_start:nely, cutout_x_start:nelx) = rho_min;
-
-% Apply density bounds
-rho_init = max(rho_min, min(rho_max, rho_init));
+design_mask(cutout_y_start:nely, cutout_x_start:nelx) = 0;
+rho_init(design_mask == 0) = 0;
 
 % Target material (adjustable) - adjust for cutout area
 total_area = nelx * nely;

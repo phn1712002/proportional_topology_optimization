@@ -30,7 +30,7 @@ volume_fraction = 0.4;  % Target volume fraction (adjusted for cutout)
 max_iter = 300;         % Maximum iterations
 conv_tol = 1e-4; % Convergence error
 plot_flag = true;       % Show plots
-plot_frequency =10;     % Frequency of new plots
+plot_frequency = 2;     % Frequency of new plots
 
 % Density bounds (consistent with PTOc documentation)
 rho_min = 1e-9;
@@ -43,12 +43,13 @@ fprintf('Target volume fraction: %.2f\n', volume_fraction);
 % Create initial density with cutout (void region)
 % Note: FEA_analysis expects rho to be nely x nelx
 rho_init = ones(nely, nelx);
-% Set cutout region to minimum density (top-right corner)
-% The cutout is from (nelx-cutout_x+1):nelx in x-direction
-% and (nely-cutout_y+1):nely in y-direction
+rho_init = max(rho_min, min(rho_max, rho_init));
+% Set cutout region
+design_mask = ones(nely, nelx);
 cutout_x_start = nelx - cutout_x + 1;
 cutout_y_start = nely - cutout_y + 1;
-rho_init(cutout_y_start:nely, cutout_x_start:nelx) = rho_min;
+design_mask(cutout_y_start:nely, cutout_x_start:nelx) = 0;
+rho_init(design_mask == 0) = 0;
 
 % Target material (fixed) - adjust for cutout area
 total_area = nelx * nely;

@@ -1,4 +1,4 @@
-function rho_opt = material_distribution_PTOc(C, TM, q, rho_min, rho_max)
+function rho_opt = material_distribution_PTOc(C, TM, q, rho_min, rho_max, design_mask)
 % MATERIAL_DISTRIBUTION_PTOC Compute optimal density distribution for compliance-based PTO
 %
 %   RHO_OPT = MATERIAL_DISTRIBUTION_PTOC(C, TM, Q, RHO_MIN, RHO_MAX)
@@ -32,9 +32,6 @@ end
 if nargin < 5
     rho_max = 1.0;
 end
-
-% Avoid zero compliance to prevent numerical issues
-C = max(C, 1e-12);
 
 % Bisection parameters
 TOLERANCE = 1e-6;         % Relative tolerance for bisection convergence

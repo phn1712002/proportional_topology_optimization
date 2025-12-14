@@ -3,7 +3,7 @@ function [rho_opt, history, converged, iter] = ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, conv_tol, problem_name)
+                       rho_min, rho_max, conv_tol, design_mask, problem_name)
 % RUN_PTOC_ITERATION Execute the main PTOc iteration loop
 %
 %   [RHO_OPT, HISTORY, CONVERGED, ITER] = ...
@@ -69,7 +69,7 @@ for iter = 1:max_iter
     
     % 3. Material redistribution loop
     RM = TM;  % Remaining material (fixed target)
-    rho_distributed = zeros(nely, nelx);  % Accumulated distributed density
+    rho_distributed = zeros(nely, nelx);  % Accumulated distributed density 
     
     % Inner loop: distribute material proportionally to compliance
     for inner = 1:inner_max

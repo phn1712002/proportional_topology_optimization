@@ -30,7 +30,7 @@ volume_fraction = 0.4;  % Target volume fraction
 max_iter = 300;         % Maximum iterations
 conv_tol = 1e-4; % Convergence error
 plot_flag = true;       % Show plots
-plot_frequency =10;     % Frequency of new plots
+plot_frequency = 2;     % Frequency of new plots
 
 % Density bounds (consistent with PTOc documentation)
 rho_min = 1e-9;
