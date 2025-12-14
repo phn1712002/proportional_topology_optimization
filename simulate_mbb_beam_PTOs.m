@@ -30,9 +30,9 @@ sigma_allow = 1.3;  % Allowable von Mises stress
 tau = 0.05;         % Stress tolerance band
 coef_inc_dec = 0.05;% Material increase/decrease coefficient (0->1)
 max_iter = 200;     % Maximum iterations
-conv_tol = 1e-1; % Convergence error
+conv_tol = 1e-4; % Convergence error
 plot_flag = true;   % Show plots
-plot_frequency = 2; % Frequency new plot
+plot_frequency =10; % Frequency new plot
 
 % Boundary conditions for MBB Beam
 [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(false);
