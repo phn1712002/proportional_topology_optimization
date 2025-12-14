@@ -45,10 +45,6 @@ rho_max = 1.0;
 rho_init = ones(nely, nelx);
 rho_init = max(rho_min, min(rho_max, rho_init));
 
-% Target material (fixed) - adjust for cutout area
-total_area = nnz(designer_mask);
-TM = volume_fraction * total_area;
-
 % Use rho_init as starting point
 rho = rho_init;
 
