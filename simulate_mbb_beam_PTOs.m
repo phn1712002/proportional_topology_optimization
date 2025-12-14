@@ -27,8 +27,9 @@ q = 2.0;            % Stress exponent for material distribution
 r_min = 1.5;        % Filter radius (in element units)
 alpha = 0.5;        % Move limit
 sigma_allow = 1.08; % Allowable von Mises stress 
-tau = 0.05;         % Stress tolerance band
-max_iter = 200;     % Maximum iterations 
+tau = 0.5;          % Stress tolerance band
+coef_inc_dec = 0.05;% Material increase/decrease coefficient (0->1)
+max_iter = 200;     % Maximum iterations
 plot_flag = true;   % Show plots
 plot_frequency = 2; % Frequency new plot
 
@@ -54,7 +55,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, 'MBB Beam');
+                       rho_min, rho_max, coef_inc_dec, 'MBB Beam');
 
 % Save results
 save('mbb_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');

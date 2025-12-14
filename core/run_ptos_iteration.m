@@ -3,7 +3,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, problem_name)
+                       rho_min, rho_max, coef_inc_dec, problem_name)
 % RUN_PTOS_ITERATION Execute the main PTOs iteration loop
 %
 %   [RHO_OPT, HISTORY, SIGMA_VM, SIGMA_MAX, CONVERGED, ITER] = ...
@@ -11,7 +11,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
 %                          LOAD_DOFS, LOAD_VALS, FIXED_DOFS, ...
 %                          Q, R_MIN, ALPHA, SIGMA_ALLOW, TAU, MAX_ITER, ...
 %                          PLOT_FLAG, PLOT_FREQUENCY, DX, DY, ...
-%                          RHO_MIN, RHO_MAX, PROBLEM_NAME)
+%                          RHO_MIN, RHO_MAX, COEF_INC_DEC, PROBLEM_NAME)
 %   runs the stress-constrained PTOs algorithm for topology optimization.
 %
 % Inputs:
@@ -32,6 +32,7 @@ function [rho_opt, history, sigma_vm, sigma_max, converged, iter] = ...
 %   plot_frequency    - Frequency of new plots
 %   dx, dy            - Element size (default: 1, 1)
 %   rho_min, rho_max  - Density bounds
+%   coef_inc_dec      - Material increase/decrease coefficient (0->1) (default: 0.05)
 %   problem_name      - Name of problem for display (e.g., 'MBB Beam')
 %
 % Outputs:
@@ -75,11 +76,11 @@ for iter = 1:max_iter
     % 3. Adjust target material based on stress constraint
     if sigma_max > (1 + tau) * sigma_allow
         % Too much stress → increase material
-        TM_init = TM_init * 1.05;
+        TM_init = TM_init * (1 + coef_inc_dec);
         fprintf('  Stress %.3f > allowable band → increase TM to %.4f\n', sigma_max, TM_init);
     elseif sigma_max < (1 - tau) * sigma_allow
         % Too little stress → decrease material
-        TM_init = TM_init * 0.95;
+        TM_init = TM_init * (1 - coef_inc_dec);
         fprintf('  Stress %.3f < allowable band → decrease TM to %.4f\n', sigma_max, TM_init);
     end
     
