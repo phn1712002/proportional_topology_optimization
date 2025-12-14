@@ -73,16 +73,23 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = c_beam_
     fixed_dofs = sort([fixed_dofs_x; fixed_dofs_y]);
 
 %% 5. Define Load Conditions
-    % Apply a concentrated vertical load over several nodes at the center
-    % of the U-beam's opening on the right edge.
-    load_col = NELX + 1; % Load is applied on the far-right column of nodes
+    % Apply a concentrated vertical load on the right side of the beam
+    % (at the free end of the bottom arm, pointing downward).
+    load_col = NELX; % Load is applied on the rightmost column of the beam (not NELX+1)
 
-    % Find the central row for the load application
-    center_load_row = round((NELY + 1) / 2);
+    % The bottom arm occupies rows from (NELY - ARM_HEIGHT + 1) to NELY
+    % We'll apply load to the last 3 rows of the bottom arm
+    bottom_arm_start = NELY - ARM_HEIGHT + 1;
+    load_node_rows = (NELY - 2):NELY; % Last 3 rows (58, 59, 60 when NELY=60)
     
-    % Get the rows for the central node and its neighbors
-    offset = floor(NUM_LOAD_POINTS / 2);
-    load_node_rows = (center_load_row - offset):(center_load_row + offset);
+    % Ensure we have exactly NUM_LOAD_POINTS points
+    if length(load_node_rows) > NUM_LOAD_POINTS
+        % Take the last NUM_LOAD_POINTS rows
+        load_node_rows = load_node_rows(end-NUM_LOAD_POINTS+1:end);
+    elseif length(load_node_rows) < NUM_LOAD_POINTS
+        % If bottom arm is too small, adjust
+        load_node_rows = bottom_arm_start:min(bottom_arm_start+NUM_LOAD_POINTS-1, NELY);
+    end
     
     % Calculate node IDs for the load points
     load_node_ids = (load_col - 1) * (NELY + 1) + load_node_rows;
@@ -90,7 +97,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = c_beam_
     % The load is applied vertically (y-direction), which corresponds to even DOFs
     load_dofs = 2 * load_node_ids'; % Ensure it's a column vector
    
-    % Assign load values to each point
+    % Assign load values to each point (negative for downward)
     load_vals = repmat(LOAD_PER_POINT, NUM_LOAD_POINTS, 1);
  
 %% 6. Assign Output Variables and Display Info
