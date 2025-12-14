@@ -35,7 +35,7 @@ plot_flag = true;   % Show plots
 plot_frequency = 2; % Frequency new plot
 
 % Boundary conditions for MBB Beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = mbb_beam_boundary(false);
 
 % Create initial density
 % Start with uniform density at target volume fraction
@@ -56,7 +56,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, conv_tol, 'MBB Beam');
+                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, 'MBB Beam');
 
 % Save results
 save('mbb_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');

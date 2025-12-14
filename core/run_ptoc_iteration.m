@@ -54,6 +54,11 @@ history.compliance = [];
 history.volume = [];
 history.change = [];
 
+% If design_mask not provided, create default (all elements are design region)
+if nargin < 22 || isempty(design_mask)
+    design_mask = ones(nely, nelx);
+end
+
 % Inner loop iterations (hardcoded as in original scripts)
 inner_max = 20;
 
@@ -74,10 +79,10 @@ for iter = 1:max_iter
     % Inner loop: distribute material proportionally to compliance
     for inner = 1:inner_max
         % Compute optimal density for current RM
-        rho_opt_iter = material_distribution_PTOc(C, RM, q, rho_min, rho_max);
+        rho_opt_iter = material_distribution_PTOc(C, RM, q, rho_min, rho_max, design_mask);
         
-        % Sum of allocated density
-        allocated = sum(rho_opt_iter(:));
+        % Sum of allocated density (only in design region)
+        allocated = sum(rho_opt_iter(design_mask == 1));
         
         % Update remaining material
         RM = RM - allocated;
@@ -97,10 +102,15 @@ for iter = 1:max_iter
     % 5. Update density with move limit
     rho_new = update_density(rho, rho_filtered, alpha, rho_min, rho_max);
     
+    % Ensure density is zero in cutout region
+    rho_new(design_mask == 0) = 0;
+    
     % 6. Compute convergence metrics
-    change = max(abs(rho_new(:) - rho(:)));
+    % Only consider design region for change calculation
+    change_design = abs(rho_new(design_mask == 1) - rho(design_mask == 1));
+    change = max(change_design(:));
     compliance = U' * K_global * U;
-    volume = sum(rho_new(:));
+    volume = sum(rho_new(design_mask == 1));  % Volume only in design region
     
     % Store history
     history.iteration(end+1) = iter;

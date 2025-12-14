@@ -1,6 +1,6 @@
-function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(plot_flag)
+function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantilever_beam_boundary(plot_flag)
 %% CANTILEVER_BEAM_BOUNDARY Define boundary conditions for a cantilever beam problem.
-%   [FIXED_DOFS, LOAD_DOFS, LOAD_VALS, NELX, NELY] = CANTILEVER_BEAM_BOUNDARY(PLOT_FLAG)
+%   [FIXED_DOFS, ..., NELY, DESIGNER_MASK] = CANTILEVER_BEAM_BOUNDARY(PLOT_FLAG)
 %   returns boundary conditions for a cantilever beam topology optimization problem.
 %   The beam is fully fixed (clamped) along the left edge and subjected to a vertical
 %   shear force applied at the midpoint of the right edge, distributed evenly over 3 elements.
@@ -10,11 +10,12 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
 %               Default is false.
 %
 % Outputs:
-%   fixed_dofs - Degrees of freedom (DOFs) that are fixed (zero displacement).
-%   load_dofs  - Degrees of freedom where loads are applied.
-%   load_vals  - Magnitudes of the corresponding loads.
-%   nelx       - Number of elements in the x-direction.
-%   nely       - Number of elements in the y-direction.
+%   fixed_dofs    - Degrees of freedom (DOFs) that are fixed (zero displacement).
+%   load_dofs     - Degrees of freedom where loads are applied.
+%   load_vals     - Magnitudes of the corresponding loads.
+%   nelx          - Number of elements in the x-direction.
+%   nely          - Number of elements in the y-direction.
+%   designer_mask - Logical matrix (nelx x nely) indicating the active design domain.
 
     % Set default value for plot_flag if not provided
     if nargin < 1
@@ -30,6 +31,10 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     % Assign output variables
     nelx = NELX;
     nely = NELY;
+
+    % <<< THÊM VÀO: TẠO DESIGNER MASK >>>
+    % For a standard cantilever, the entire domain is active.
+    designer_mask = true(nelx, nely);
 
     % --- NODE AND DOF NUMBERING CONVENTION ---
     % The mesh contains (nelx+1) x (nely+1) nodes.
@@ -47,9 +52,6 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     num_load_nodes = LOAD_DIST_ELEMENTS + 1;
     
     % Determine the row indices of these 4 nodes, symmetric about the mid-height.
-    % The mid-height lies between rows nely/2 and (nely/2 + 1).
-    % We select 2 nodes below and 2 nodes above this midpoint.
-    % For nely=60, mid-height is 30. We take nodes at rows 29, 30, 31, 32.
     start_row = (nely / 2 + 1) - (num_load_nodes / 2);
     end_row   = (nely / 2) + (num_load_nodes / 2);
     
@@ -65,8 +67,8 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     % Load acts in the y-direction (downward), so we take only y-DOFs.
     load_dofs = 2 * load_node_ids;
     
-    % Distribute the total load uniformly among all loaded nodes.
-    load_vals = (LOAD_VAL / num_load_nodes) * ones(1, num_load_nodes);
+    % Distribute the load uniformly among all loaded nodes.
+    load_vals = (LOAD_VAL) * ones(1, num_load_nodes);
     
     % --- DISPLAY & VISUALIZATION ---
     fprintf('--- Cantilever Beam Configuration ---\n');
@@ -81,6 +83,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     
     % Visualize boundary conditions if requested
     if plot_flag
-        visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, 'Cantilever Beam');
+        % <<< THÊM VÀO: Truyền designer_mask vào hàm visualize >>>
+        visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, 'Cantilever Beam', designer_mask);
     end
 end

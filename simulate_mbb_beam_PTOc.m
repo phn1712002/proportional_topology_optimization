@@ -37,7 +37,7 @@ rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for MBB beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = mbb_beam_boundary(false);
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Create initial density
@@ -48,10 +48,6 @@ rho_init = ones(nely, nelx);
 total_area = nelx * nely;
 TM = volume_fraction * total_area;
 
-fprintf('Mesh: %d x %d elements\n', nelx, nely);
-fprintf('Total area: %d elements\n', total_area);
-fprintf('Target material (TM): %.2f (%.1f%% of total area)\n', TM, volume_fraction*100);
-
 % Use rho_init as starting point
 rho = rho_init;
 
@@ -61,7 +57,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, conv_tol, 'MBB Beam');
+    rho_min, rho_max, conv_tol, designer_mask, 'MBB Beam');
 
 % Compute final metrics
 final_compliance = history.compliance(end);

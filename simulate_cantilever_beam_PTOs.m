@@ -35,7 +35,7 @@ plot_flag = true;   % Show plots
 plot_frequency = 2; % Frequency new plot
 
 % Boundary conditions for cantilever beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantilever_beam_boundary(false);
 
 % Create initial density
 % Start with uniform density at target volume fraction

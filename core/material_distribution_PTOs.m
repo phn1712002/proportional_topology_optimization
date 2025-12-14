@@ -1,9 +1,10 @@
-function rho_opt = material_distribution_PTOs(sigma_vm, RM, q, volume, rho_min, rho_max)
+function rho_opt = material_distribution_PTOs(sigma_vm, RM, q, volume, rho_min, rho_max, design_mask)
 % MATERIAL_DISTRIBUTION_PTOS Compute optimal density distribution for stress-constrained PTO
 %
-%   RHO_OPT = MATERIAL_DISTRIBUTION_PTOS(SIGMA_VM, RM, Q, VOLUME, RHO_MIN, RHO_MAX)
+%   RHO_OPT = MATERIAL_DISTRIBUTION_PTOS(SIGMA_VM, RM, Q, VOLUME, RHO_MIN, RHO_MAX, DESIGN_MASK)
 %   distributes the remaining material RM proportionally to the stress raised
-%   to power q, with optional volume weighting.
+%   to power q, with optional volume weighting. Design mask indicates which
+%   elements are in the design region (1 = design, 0 = cutout/void).
 %
 % Inputs:
 %   sigma_vm   - Von Mises stress for each element (nely x nelx)
@@ -12,6 +13,7 @@ function rho_opt = material_distribution_PTOs(sigma_vm, RM, q, volume, rho_min, 
 %   volume     - Element volumes (nely x nelx) or scalar if uniform
 %   rho_min    - Minimum density (default: 1e-3)
 %   rho_max    - Maximum density (default: 1.0)
+%   design_mask- Design region mask (nely x nelx, 1 = design, 0 = cutout)
 %
 % Outputs:
 %   rho_opt    - Optimal density distribution (nely x nelx)
@@ -29,6 +31,11 @@ end
 if nargin < 6
     rho_max = 1.0;
 end
+if nargin < 7
+    % If design_mask not provided, assume all elements are in design region
+    [nely, nelx] = size(sigma_vm);
+    design_mask = ones(nely, nelx);
+end
 
 % Ensure sigma_vm is a matrix
 [nely, nelx] = size(sigma_vm);
@@ -44,17 +51,29 @@ sigma_vm = max(sigma_vm, 1e-9);
 % Compute weighted stress
 weighted_stress = sigma_vm.^q .* volume;
 
-% Total weighted stress
-total_weight = sum(weighted_stress(:));
+% Only consider design region for material distribution
+weighted_stress_design = weighted_stress .* design_mask;
 
-% If total weight is zero (unlikely), distribute uniformly
+% Total weighted stress in design region
+total_weight = sum(weighted_stress_design(:));
+
+% If total weight is zero (unlikely), distribute uniformly in design region
 if total_weight < 1e-12
-    rho_opt = RM / (nelx * nely) * ones(nely, nelx);
+    % Count design elements
+    num_design_elements = sum(design_mask(:));
+    if num_design_elements > 0
+        rho_opt = RM / num_design_elements * ones(nely, nelx);
+    else
+        rho_opt = zeros(nely, nelx);
+    end
 else
-    % Proportional distribution
-    rho_opt = RM * weighted_stress / total_weight;
+    % Proportional distribution in design region
+    rho_opt = RM * weighted_stress_design / total_weight;
 end
 
 % Apply density bounds
 rho_opt = max(rho_min, min(rho_max, rho_opt));
+
+% Ensure density is zero in cutout region
+rho_opt(design_mask == 0) = 0;
 end

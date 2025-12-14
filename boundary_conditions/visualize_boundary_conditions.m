@@ -1,33 +1,58 @@
-function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, title_str, varargin)
-% VISUALIZE_BOUNDARY_CONDITIONS Plot mesh with boundary conditions
+function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, title_str, designer_mask)
+% VISUALIZE_BOUNDARY_CONDITIONS Plot mesh with boundary conditions.
 %
 %   VISUALIZE_BOUNDARY_CONDITIONS(NELX, NELY, FIXED_DOFS, LOAD_DOFS, LOAD_VALS, TITLE_STR)
-%   creates a visualization of the mesh with fixed supports and load locations.
+%   creates a visualization of a rectangular mesh with its boundary conditions.
 %
-%   VISUALIZE_BOUNDARY_CONDITIONS(..., CUTOUT_X, CUTOUT_Y) also displays a
-%   cutout region in the top-right corner (for L-bracket problems).
+%   VISUALIZE_BOUNDARY_CONDITIONS(..., DESIGNER_MASK) also shades the
+%   inactive (void) regions of the design domain based on the provided logical mask.
 
-    figure('Position', [100, 100, 800, 450]); % Adjusted height for better aspect ratio
+    figure('Position', [100, 100, 800, 450]);
     hold on;
     
-    % Create mesh grid
+    % --- DOMAIN VISUALIZATION (REVISED) ---
+    if nargin >= 7 && ~isempty(designer_mask)
+        % Use imagesc to draw the background based on the mask.
+        imagesc([0, nelx], [0, nely], designer_mask');
+        set(gca, 'YDir', 'normal');
+        colormap([0.92, 0.92, 0.92; 1, 1, 1]); % [inactive, active]
+
+        % <<< GIẢI PHÁP: Kiểm tra xem mask có phải là một hình chữ nhật đặc hay không >>>
+        if numel(unique(designer_mask)) > 1
+            % Trường hợp phức tạp (VD: L-bracket): có cả vùng active và inactive
+            % Tạo legend cho vùng inactive
+            patch(NaN, NaN, [0.92, 0.92, 0.92], 'DisplayName', 'Inactive Region');
+            
+            % Vẽ đường viền chính xác quanh vùng active (hình L) bằng contour
+            x_centers = 0.5:1:nelx-0.5;
+            y_centers = 0.5:1:nely-0.5;
+            contour(x_centers, y_centers, double(designer_mask'), [0.5 0.5], 'k-', 'LineWidth', 1.5, 'HandleVisibility', 'off');
+            
+            % Vẽ đường viền bên ngoài của toàn bộ miền để làm khung
+            plot([0, nelx, nelx, 0, 0], [0, 0, nely, nely, 0], 'k-', 'LineWidth', 1.0, 'HandleVisibility', 'off');
+        else
+            % Trường hợp đơn giản (VD: Cantilever): toàn bộ vùng là active
+            % Chỉ cần vẽ một đường viền hình chữ nhật
+            plot([0, nelx, nelx, 0, 0], [0, 0, nely, nely, 0], 'k-', 'LineWidth', 1.5, 'DisplayName', 'Active Domain');
+        end
+
+    else
+        % Trường hợp không có mask: mặc định là miền chữ nhật
+        plot([0, nelx, nelx, 0, 0], [0, 0, nely, nely, 0], 'k-', 'LineWidth', 1.5, 'DisplayName', 'Active Domain');
+    end
+
+    % --- MESH GRID AND BOUNDARY CONDITIONS ---
     [X, Y] = meshgrid(0:nelx, 0:nely);
+    plot(X, Y, ':', 'Color', [0.8 0.8 0.8], 'HandleVisibility', 'off');
+    plot(X', Y', ':', 'Color', [0.8 0.8 0.8], 'HandleVisibility', 'off');
     
-    % Plot the full grid domain lightly
-    plot(X, Y, ':', 'Color', [0.8 0.8 0.8]);
-    plot(X', Y', ':', 'Color', [0.8 0.8 0.8]);
-    
-    % Correctly convert DOFs to node coordinates based on COLUMN-WISE numbering.
     fixed_nodes = unique(ceil(fixed_dofs/2));
     fixed_x = floor((fixed_nodes - 1) / (nely + 1));
     fixed_y = mod(fixed_nodes - 1, nely + 1);
-    
-    % Plot fixed supports (red triangles)
     plot(fixed_x, fixed_y, 'r^', 'MarkerSize', 8, 'MarkerFaceColor', 'r', 'DisplayName', 'Fixed Support');
     
-    % Plot load locations with arrows
-    load_color = [0, 0.4, 0.8]; % A nice blue
-    arrow_scale = 0.05 * max(nelx, nely); % Scale arrow size relative to domain
+    load_color = [0, 0.4, 0.8];
+    arrow_scale = 0.05 * max(nelx, nely);
     
     for i = 1:length(load_dofs)
         current_node = ceil(load_dofs(i)/2);
@@ -41,37 +66,15 @@ function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_v
             dy = sign(load_vals(i)) * arrow_scale;
         end
         
-        % Increased LineWidth from 2 to 3 and MaxHeadSize from 0.5 to 0.8
         if dy < 0
-            quiver(node_x, node_y + dy*(-1.5), dx, dy, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'DisplayName', 'Load', 'HandleVisibility', 'off');
+            quiver(node_x, node_y + dy*(-1.5), dx, dy, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'HandleVisibility', 'off');
         else
-            quiver(node_x, node_y, dx, dy, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'DisplayName', 'Load', 'HandleVisibility', 'off');
+            quiver(node_x, node_y, dx, dy, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'HandleVisibility', 'off');
         end
     end
-    % Add a single representative quiver for the legend
     quiver(NaN, NaN, 1, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'DisplayName', 'Load');
 
-    % Check for cutout parameters
-    if ~isempty(varargin) && nargin >= 7
-        cutout_x = varargin{1};
-        cutout_y = varargin{2};
-        
-        % The patch command that drew the gray inactive region is now commented out.
-        % patch_x = [nelx - cutout_x, nelx,            nelx,            nelx - cutout_x];
-        % patch_y = [nely - cutout_y, nely - cutout_y, nely,            nely];
-        % patch(patch_x, patch_y, [0.92, 0.92, 0.92], 'EdgeColor', 'none', 'DisplayName', 'Inactive Region');
-        
-        % Draw the active L-shape boundary (this part remains)
-        plot([0, nelx, nelx, nelx-cutout_x, nelx-cutout_x, 0, 0], ...
-             [0, 0, nely-cutout_y, nely-cutout_y, nely, nely, 0], ...
-             'k-', 'LineWidth', 1.5, 'DisplayName', 'Active Domain');
-
-    else
-        % If no cutout, draw the full rectangular domain boundary
-        plot([0, nelx, nelx, 0, 0], [0, 0, nely, nely, 0], 'k-', 'LineWidth', 1.5, 'DisplayName', 'Active Domain');
-    end
-    
-    % Format plot
+    % --- FORMAT PLOT ---
     axis equal;
     axis tight;
     padding_x = 0.1 * nelx;

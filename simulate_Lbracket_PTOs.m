@@ -38,24 +38,16 @@ rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_bracket_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_bracket_boundary(false);
 
 % Create initial density with cutout (void region)
 % Note: FEA_analysis expects rho to be nely x nelx
 rho_init = ones(nely, nelx);
 rho_init = max(rho_min, min(rho_max, rho_init));
-% Set cutout region
-design_mask = ones(nely, nelx);
-cutout_x_start = nelx - cutout_x + 1;
-cutout_y_start = nely - cutout_y + 1;
-design_mask(cutout_y_start:nely, cutout_x_start:nelx) = 0;
-rho_init(design_mask == 0) = 0;
 
-% Target material (adjustable) - adjust for cutout area
-total_area = nelx * nely;
-cutout_area = cutout_x * cutout_y;
-active_area = total_area - cutout_area;
-TM_init = active_area;
+% Target material (fixed) - adjust for cutout area
+active_area = nnz(designer_mask);
+TM = volume_fraction * active_area;
 
 % Use rho_init as starting point
 rho = rho_init;
@@ -66,7 +58,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, conv_tol, 'L-bracket');
+                       rho_min, rho_max, coef_inc_dec, design_mask, conv_tol, designer_mask, 'L-bracket');
 
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');
