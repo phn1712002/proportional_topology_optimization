@@ -67,8 +67,8 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
     % The load acts in the vertical (y) direction (even-numbered DOFs)
     load_dofs = 2 * load_node_ids;
     
-    % Distribute the total load evenly across the load points
-    load_vals = repmat(LOAD_VAL / NUM_LOAD_POINTS, 1, NUM_LOAD_POINTS);
+    % Distribute the load evenly across the load points
+    load_vals = repmat(LOAD_VAL, 1, NUM_LOAD_POINTS);
     
     % --- DISPLAY & VISUALIZATION ---
     fprintf('--- MBB Beam Configuration (Half Symmetry) ---\n');

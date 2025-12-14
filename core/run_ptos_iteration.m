@@ -65,7 +65,7 @@ inner_max = 20;
 
 % Main iteration loop
 for iter = 1:max_iter
-    fprintf('%s PTOs Iteration %d: TM = %.4f\n', problem_name, iter, TM_init);
+    fprintf('%s PTOs Iteration %d\n', problem_name, iter);
     
     % 1. FEA analysis
     [U, K_global] = FEA_analysis(nelx, nely, rho, p, E0, nu, load_dofs, load_vals, fixed_dofs);

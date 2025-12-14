@@ -33,7 +33,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     NELY = 100;           % Number of elements in y-direction
     CUTOUT_X = 60;        % Width of the top-right cutout
     CUTOUT_Y = 60;        % Height of the top-right cutout
-    TOTAL_LOAD = -1;      % Total downward load (negative y-direction)
+    LOAD_VAL = -1;      % Total downward load (negative y-direction)
     NUM_LOAD_POINTS = 3;  % Number of nodes to distribute the load over
 
     % Assign to output variables
@@ -70,7 +70,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     
     % Distribute the total load evenly over the 3 nodes (1/3 each)
     % Similar to mbb_beam_boundary.m
-    load_vals = repmat(TOTAL_LOAD / NUM_LOAD_POINTS, NUM_LOAD_POINTS, 1);
+    load_vals = repmat(LOAD_VAL, NUM_LOAD_POINTS, 1);
     
     % Apply vertical forces, so we target the y-DOFs
     load_dofs = 2 * load_nodes;       % y-direction DOFs for the 3 nodes
@@ -81,7 +81,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     fprintf('Cutout from top-right: %d x %d elements\n', cutout_x, cutout_y);
     fprintf('Fixed DOFs on top of vertical arm (width: %d elements)\n', fixed_width_in_elements);
     fprintf('Load: Distributed vertical force at nodes [%d, %d, %d]\n', load_nodes(1), load_nodes(2), load_nodes(3));
-    fprintf('Load distribution: Even (%.3f each)\n', TOTAL_LOAD / NUM_LOAD_POINTS);
+    fprintf('Load distribution: Even (%.3f each)\n', LOAD_VAL / NUM_LOAD_POINTS);
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested
