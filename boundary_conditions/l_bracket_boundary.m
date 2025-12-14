@@ -69,8 +69,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_brack
     % Calculate node IDs for the 3 load points
     load_nodes = (load_node_x_idx - 1) * (nely + 1) + load_node_y_indices;
     
-    % Distribute the total load evenly over the nodes
-    % NOTE: Corrected to divide total load by the number of points.
+    % % Apply force at 3 points
     load_vals = repmat(LOAD_VAL, NUM_LOAD_POINTS, 1);
     
     % Apply vertical forces, so we target the y-DOFs (2 * node_id)
@@ -80,8 +79,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_brack
     fprintf('--- L-Bracket Configuration ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
     fprintf('Cutout from top-right: %d x %d elements\n', CUTOUT_X, CUTOUT_Y);
-    fprintf('Fixed DOFs on top of vertical arm (width: %d elements)\n', fixed_width_in_elements);
-    fprintf('Load: Distributed vertical force at nodes [%d, %d, %d]\n', load_nodes(1), load_nodes(2), load_nodes(3));
+    fprintf('Fixed DOFs count: %d\n', length(fixed_dofs));
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested

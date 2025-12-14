@@ -67,17 +67,13 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = mbb_bea
     % The load acts in the vertical (y) direction (even-numbered DOFs)
     load_dofs = 2 * load_node_ids;
     
-    % Distribute the total load evenly across the load points
-    % NOTE: Corrected to divide total load by the number of points.
+    % Apply force at 3 points
     load_vals = repmat(LOAD_VAL, NUM_LOAD_POINTS, 1);
     
     % --- DISPLAY & VISUALIZATION ---
     fprintf('--- MBB Beam Configuration (Half Symmetry) ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
     fprintf('Fixed DOFs count: %d\n', length(fixed_dofs));
-    fprintf('  - Left edge fixed in x-direction (Symmetry)\n');
-    fprintf('  - Bottom-right corner fixed in y-direction (Node ID: %d)\n', roller_node_id);
-    fprintf('Load: Distributed force over %d nodes at top-left edge\n', NUM_LOAD_POINTS);
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested (REVISED)

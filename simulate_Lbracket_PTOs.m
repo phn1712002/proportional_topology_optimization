@@ -40,10 +40,10 @@ rho_max = 1.0;
 % Boundary conditions for L-bracket
 [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_bracket_boundary(false);
 
-% Create initial density with cutout (void region)
-% Note: FEA_analysis expects rho to be nely x nelx
+% Create initial density
+% Start with uniform density at target volume fraction
+TM_init = nnz(designer_mask);
 rho_init = ones(nely, nelx);
-rho_init = max(rho_min, min(rho_max, rho_init));
 
 % Use rho_init as starting point
 rho = rho_init;
@@ -54,7 +54,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, design_mask, conv_tol, designer_mask, 'L-bracket');
+                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, 'L-bracket');
 
 % Save results
 save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'cutout_x', 'cutout_y');

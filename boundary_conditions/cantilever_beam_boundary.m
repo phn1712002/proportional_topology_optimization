@@ -67,23 +67,17 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantile
     % Load acts in the y-direction (downward), so we take only y-DOFs.
     load_dofs = 2 * load_node_ids;
     
-    % Distribute the load uniformly among all loaded nodes.
+    % Apply force at 3 points
     load_vals = (LOAD_VAL) * ones(1, num_load_nodes);
     
     % --- DISPLAY & VISUALIZATION ---
     fprintf('--- Cantilever Beam Configuration ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
-    fprintf('Fixed DOFs count: %d (entire left edge)\n', length(fixed_dofs));
-    fprintf('Load: Vertical shear force at midpoint of right edge\n');
-    fprintf('Load distributed over %d elements (applied to %d nodes):\n', ...
-            LOAD_DIST_ELEMENTS, num_load_nodes);
-    fprintf('  - Loaded node IDs: ');
-    fprintf('%d ', load_node_ids);
-    fprintf('\n  - Total load magnitude: %.2f\n', abs(LOAD_VAL));
+    fprintf('Fixed DOFs count: %d\n', length(fixed_dofs));
+    fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested
     if plot_flag
-        % <<< THÊM VÀO: Truyền designer_mask vào hàm visualize >>>
         visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, 'Cantilever Beam', designer_mask);
     end
 end
