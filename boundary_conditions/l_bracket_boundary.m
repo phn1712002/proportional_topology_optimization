@@ -28,12 +28,13 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
         plot_flag = true;
     end
 
-    % --- CONSTANTS: SPECIFIC DIMENSIONS ---
+    % --- PROBLEM CONFIGURATION ---
     NELX = 100;           % Number of elements in x-direction
     NELY = 100;           % Number of elements in y-direction
     CUTOUT_X = 60;        % Width of the top-right cutout
     CUTOUT_Y = 60;        % Height of the top-right cutout
     TOTAL_LOAD = -1;      % Total downward load (negative y-direction)
+    NUM_LOAD_POINTS = 3;  % Number of nodes to distribute the load over
 
     % Assign to output variables
     nelx = NELX;
@@ -41,7 +42,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     cutout_x = CUTOUT_X;
     cutout_y = CUTOUT_Y;
 
-    % --- FIXED DOFs: Top edge of the vertical arm ---
+    % --- FIXED DOFs ---
     % The vertical arm has a width of (NELX - CUTOUT_X) elements.
     fixed_width_in_elements = NELX - CUTOUT_X;
     
@@ -54,7 +55,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     % Convert node IDs to DOFs (both x and y directions are fixed)
     fixed_dofs = sort([2 * fixed_nodes - 1, 2 * fixed_nodes]);
     
-    % --- LOAD APPLICATION: Distributed over 3 nodes at the outer corner ---
+    % --- LOAD APPLICATION ---
     % The load is applied at the outer-most edge of the horizontal arm,
     % centered around the corner.
     
@@ -67,19 +68,20 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, cutout_x, cutout_y] = l_
     % Calculate node IDs for the 3 load points
     load_nodes = (load_node_x_idx - 1) * (nely + 1) + load_node_y_indices;
     
-    % Distribute the total load over the 3 nodes (1/4, 1/2, 1/4 distribution)
-    load_distribution = [0.25; 0.5; 0.25];
+    % Distribute the total load evenly over the 3 nodes (1/3 each)
+    % Similar to mbb_beam_boundary.m
+    load_vals = repmat(TOTAL_LOAD / NUM_LOAD_POINTS, NUM_LOAD_POINTS, 1);
     
     % Apply vertical forces, so we target the y-DOFs
     load_dofs = 2 * load_nodes;       % y-direction DOFs for the 3 nodes
-    load_vals = TOTAL_LOAD * load_distribution;
 
-    % --- Display configuration information for verification ---
-    fprintf('--- L-Bracket Configuration (Specific Dimensions) ---\n');
+    % --- DISPLAY & VISUALIZATION ---
+    fprintf('--- L-Bracket Configuration ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
     fprintf('Cutout from top-right: %d x %d elements\n', cutout_x, cutout_y);
     fprintf('Fixed DOFs on top of vertical arm (width: %d elements)\n', fixed_width_in_elements);
     fprintf('Load: Distributed vertical force at nodes [%d, %d, %d]\n', load_nodes(1), load_nodes(2), load_nodes(3));
+    fprintf('Load distribution: Even (%.3f each)\n', TOTAL_LOAD / NUM_LOAD_POINTS);
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested

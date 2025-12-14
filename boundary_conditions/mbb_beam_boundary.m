@@ -26,7 +26,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
         plot_flag = true;
     end
 
-%% PROBLEM CONFIGURATION
+    % --- PROBLEM CONFIGURATION ---
     NELX = 120;             % Number of elements in x-direction
     NELY = 40;              % Number of elements in y-direction
     LOAD_VAL = -1;          % Total downward load (negative y-direction)
@@ -36,7 +36,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
     nelx = NELX;
     nely = NELY;
 
-%% FIXED DOFs
+    % --- FIXED DOFs ---
     % Node ID formula: node_id = (col - 1) * (nely + 1) + row
     
     % 1. Symmetry Condition: Left edge fixed in x-direction (Ux = 0)
@@ -55,7 +55,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
     % Combine all fixed DOFs, sort, and ensure uniqueness
     fixed_dofs = sort(unique([symmetry_dofs, roller_dof]));
     
-%% LOAD APPLICATION
+    % --- LOAD APPLICATION ---
     % A vertical load distributed over the first NUM_LOAD_POINTS nodes
     % at the top-left edge.
     load_node_cols = 1:NUM_LOAD_POINTS;
@@ -70,7 +70,7 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = mbb_beam_boundary(plot
     % Distribute the total load evenly across the load points
     load_vals = repmat(LOAD_VAL / NUM_LOAD_POINTS, 1, NUM_LOAD_POINTS);
     
-%% DISPLAY & VISUALIZATION
+    % --- DISPLAY & VISUALIZATION ---
     fprintf('--- MBB Beam Configuration (Half Symmetry) ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
     fprintf('Fixed DOFs count: %d\n', length(fixed_dofs));

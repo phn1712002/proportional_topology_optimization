@@ -1,7 +1,6 @@
 function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_boundary(plot_flag)
-% CANTILEVER_BEAM_BOUNDARY Defines boundary conditions for a cantilever beam problem.
-%
-%   [FIXED_DOFS, LOAD_DOFS, LOAD_VALS, NELX, NELY] = cantilever_beam_boundary(PLOT_FLAG)
+%% CANTILEVER_BEAM_BOUNDARY Define boundary conditions for a cantilever beam problem.
+%   [FIXED_DOFS, LOAD_DOFS, LOAD_VALS, NELX, NELY] = CANTILEVER_BEAM_BOUNDARY(PLOT_FLAG)
 %   returns boundary conditions for a cantilever beam topology optimization problem.
 %   The beam is fully fixed (clamped) along the left edge and subjected to a vertical
 %   shear force applied at the midpoint of the right edge, distributed evenly over 3 elements.
@@ -17,12 +16,12 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
 %   nelx       - Number of elements in the x-direction.
 %   nely       - Number of elements in the y-direction.
 
-    % Set default value for plot_flag if not provided.
+    % Set default value for plot_flag if not provided
     if nargin < 1
         plot_flag = true;
     end
 
-    % ---- PROBLEM CONFIGURATION ----
+    % --- PROBLEM CONFIGURATION ---
     NELX = 120;                 % Number of elements in the x-direction
     NELY = 60;                  % Number of elements in the y-direction
     LOAD_VAL = -1;              % Normalized load magnitude (downward direction)
@@ -32,18 +31,18 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     nelx = NELX;
     nely = NELY;
 
-    % ---- NODE AND DOF NUMBERING CONVENTION ----
+    % --- NODE AND DOF NUMBERING CONVENTION ---
     % The mesh contains (nelx+1) x (nely+1) nodes.
     % Nodes are numbered COLUMN-WISE, starting from the bottom-left corner.
     % Node ID at (column, row): node_id = (col - 1) * (nely + 1) + row
     % Degrees of freedom for node 'n': 2*n-1 (x-direction), 2*n (y-direction)
 
-    % ---- 1. CLAMPED BOUNDARY CONDITION (Left edge) ----
+    % --- FIXED DOFs ---
     % The left edge corresponds to column 1, containing nodes 1 through (nely+1).
     % All DOFs (both x and y) along this edge are fixed.
     fixed_dofs = 1:2*(nely+1);
     
-    % ---- 2. LOAD APPLICATION (Distributed over 3 elements at the right edge midpoint) ----
+    % --- LOAD APPLICATION ---
     % To distribute the load over 3 elements, forces are applied to 4 nodes.
     num_load_nodes = LOAD_DIST_ELEMENTS + 1;
     
@@ -69,15 +68,16 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely] = cantilever_beam_bounda
     % Distribute the total load uniformly among all loaded nodes.
     load_vals = (LOAD_VAL / num_load_nodes) * ones(1, num_load_nodes);
     
-    % Display configuration summary
-    fprintf('Element mesh: %d x %d\n', nelx, nely);
-    fprintf('Number of fixed DOFs: %d (entire left edge)\n', length(fixed_dofs));
-    fprintf('Load: Vertical shear force at midpoint of right edge.\n');
+    % --- DISPLAY & VISUALIZATION ---
+    fprintf('--- Cantilever Beam Configuration ---\n');
+    fprintf('Mesh: %d x %d elements\n', nelx, nely);
+    fprintf('Fixed DOFs count: %d (entire left edge)\n', length(fixed_dofs));
+    fprintf('Load: Vertical shear force at midpoint of right edge\n');
     fprintf('Load distributed over %d elements (applied to %d nodes):\n', ...
             LOAD_DIST_ELEMENTS, num_load_nodes);
-    fprintf(' - Loaded node IDs: ');
+    fprintf('  - Loaded node IDs: ');
     fprintf('%d ', load_node_ids);
-    fprintf('\n - Total load magnitude: %.2f\n', abs(LOAD_VAL));
+    fprintf('\n  - Total load magnitude: %.2f\n', abs(LOAD_VAL));
     
     % Visualize boundary conditions if requested
     if plot_flag

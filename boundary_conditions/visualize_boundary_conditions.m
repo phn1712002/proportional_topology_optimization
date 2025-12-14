@@ -41,7 +41,6 @@ function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_v
             dy = sign(load_vals(i)) * arrow_scale;
         end
         
-        % --- THAY ĐỔI 1: Mũi tên to đậm hơn ---
         % Increased LineWidth from 2 to 3 and MaxHeadSize from 0.5 to 0.8
         if dy < 0
             quiver(node_x, node_y + dy*(-1.5), dx, dy, 0, 'Color', load_color, 'LineWidth', 3, 'MaxHeadSize', 0.8, 'DisplayName', 'Load', 'HandleVisibility', 'off');
@@ -57,7 +56,6 @@ function visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_v
         cutout_x = varargin{1};
         cutout_y = varargin{2};
         
-        % --- THAY ĐỔI 2: Ẩn vùng cutout ---
         % The patch command that drew the gray inactive region is now commented out.
         % patch_x = [nelx - cutout_x, nelx,            nelx,            nelx - cutout_x];
         % patch_y = [nely - cutout_y, nely - cutout_y, nely,            nely];
