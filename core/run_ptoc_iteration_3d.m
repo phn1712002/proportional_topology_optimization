@@ -123,8 +123,8 @@ for iter = 1:max_iter
         clf;
         set(gcf, 'WindowState', 'maximized');
         
-        % 3D visualization using stlPlot
-        subplot(2,3,[1,2,4,5]);
+        % 3D visualization using stlPlot from lib/stlTools
+        subplot(2,2,1);
         if nelz > 1
             % Create isosurface at density = 0.5
             [X,Y,Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
@@ -135,38 +135,8 @@ for iter = 1:max_iter
             verts(:,2) = verts(:,2) * dy;
             verts(:,3) = verts(:,3) * dz;
             
-            % Plot using stlPlot style
-            object.vertices = verts;
-            object.faces = faces;
-            patch(object, 'FaceColor', [0.8 0.8 1.0], ...
-                  'EdgeColor', 'none', ...
-                  'FaceLighting', 'gouraud', ...
-                  'AmbientStrength', 0.15);
-            
-            % Add lighting and styling
-            camlight('headlight');
-            material('dull');
-            daspect([1 1 1]);
-            view(3); axis tight;
-            grid on;
-            title(sprintf('3D Model (iter %d)', iter));
-            xlabel('x'); ylabel('y'); zlabel('z');
-        else
-            % 2D case (single layer)
-        subplot(2,3,6);
-        % Show isosurface for 3D visualization
-        if nelz > 1
-            % Create isosurface at density = 0.5
-            [X,Y,Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
-            patch_obj = patch(isosurface(X, Y, Z, rho_filtered, 0.5));
-            isonormals(X, Y, Z, rho_filtered, patch_obj);
-            patch_obj.FaceColor = 'red';
-            patch_obj.EdgeColor = 'none';
-            daspect([1 1 1]);
-            view(3); axis tight;
-            camlight; lighting gouraud;
-            title('3D Isosurface (density=0.5)');
-            xlabel('x'); ylabel('y'); zlabel('z');
+            % Use stlPlot to visualize the 3D model
+            stlPlot(verts, faces, sprintf('3D Model (iter %d)', iter));
         else
             % 2D case (single layer)
             imagesc(rho_filtered(:,:,1)); axis equal tight; colorbar;
@@ -174,6 +144,20 @@ for iter = 1:max_iter
             axis xy;
             xlabel('x'); ylabel('y');
         end
+        
+        subplot(2,2,2);
+        plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5); 
+        grid on; title('Total Compliance'); xlabel('Iteration'); ylabel('Compliance');
+        
+        subplot(2,2,3);
+        plot(history.iteration, history.volume, 'r-*', 'LineWidth', 1.5); 
+        grid on; title('Volume'); xlabel('Iteration'); ylabel('Volume');
+        yline(TM, 'k--', 'Target Volume');
+        
+        subplot(2,2,4);
+        semilogy(history.iteration, history.change, 'm-d', 'LineWidth', 1.5); 
+        grid on; title('Density Change (log)'); xlabel('Iteration'); ylabel('Max Change');
+        yline(1e-3, '--', 'Tolerance');
         
         drawnow;
     end
