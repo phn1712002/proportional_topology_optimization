@@ -124,13 +124,13 @@ for iter = 1:max_iter
         set(gcf, 'WindowState', 'maximized');
         
         subplot(2,3,1);
-        imagesc(rho_new); axis equal tight; colorbar; 
+        imagesc(rho_new); axis equal tight; colorbar; colormap(gray);
         title(sprintf('Density (iter %d)', iter));
         axis xy;
         xlabel('x'); ylabel('y');
         
         subplot(2,3,2);
-        imagesc(C); axis equal tight; colorbar; 
+        imagesc(C); axis equal tight; colorbar; colormap(gray);
         title('Element Compliance');
         axis xy;
         xlabel('x'); ylabel('y');
@@ -150,7 +150,7 @@ for iter = 1:max_iter
         yline(1e-3, '--', 'Tolerance');
         
         subplot(2,3,6);
-        imagesc(rho_filtered); axis equal tight; colorbar; 
+        imagesc(rho_filtered); axis equal tight; colorbar; colormap(gray);
         title('Filtered Density');
         axis xy;
         xlabel('x'); ylabel('y');

@@ -202,7 +202,7 @@ for iter = 1:max_iter
         subplot(2,3,6);
         plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5);
         hold on;
-        yline(sigma_allow * (1 - tau), 'r--', 'Lower Bound');
+        yline(sigma_allow * (1 - tau), 'r--');
         yline(sigma_allow * (1 + tau), 'r--', 'Upper Bound');
         yline(sigma_allow, 'k-', 'Allowable');
         hold off;

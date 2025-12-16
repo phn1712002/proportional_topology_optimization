@@ -144,13 +144,13 @@ for iter = 1:max_iter
         set(gcf, 'WindowState', 'maximized');
         
         subplot(2,3,1);
-        imagesc(rho_new); axis equal tight; colorbar; 
+        imagesc(rho_new); axis equal tight; colorbar; colormap(gray);
         title(sprintf('Density (iter %d)', iter));
         axis xy;
         xlabel('x'); ylabel('y');
         
         subplot(2,3,2);
-        imagesc(sigma_vm); axis equal tight; colorbar; 
+        imagesc(sigma_vm); axis equal tight; colorbar; colormap(gray);
         title(sprintf('Stress (max=%.2f)', sigma_max));
         axis xy;
         xlabel('x'); ylabel('y');
@@ -166,7 +166,7 @@ for iter = 1:max_iter
         subplot(2,3,5);
         plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5); 
         grid on; title('Max Stress'); xlabel('Iteration'); ylabel('Max Stress');
-        yline(sigma_allow * (1 - tau), 'r--', 'Lower Bound');
+        yline(sigma_allow * (1 - tau), 'r--');
         yline(sigma_allow * (1 + tau), 'r--', 'Upper Bound');
         yline(sigma_allow, 'k-', 'Allowable stress');
         
