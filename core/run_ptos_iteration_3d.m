@@ -190,25 +190,22 @@ for iter = 1:max_iter
         subplot(2,3,4);
         plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5);
         grid on; title('Compliance'); xlabel('Iteration'); ylabel('Compliance');
-        xlim([0, max_iter]);
 
         % Subplot 5: Volume history
         subplot(2,3,5);
         plot(history.iteration, history.volume, 'r-*', 'LineWidth', 1.5);
         grid on; title('Volume'); xlabel('Iteration'); ylabel('Volume');
-        xlim([0, max_iter]);
 
         % Subplot 6: Max stress history with allowable band
         subplot(2,3,6);
         plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5);
         hold on;
         yline(sigma_allow * (1 - tau), 'r--');
-        yline(sigma_allow * (1 + tau), 'r--', 'Upper Bound');
+        yline(sigma_allow * (1 + tau), 'r--');
         yline(sigma_allow, 'k-', 'Allowable');
         hold off;
         grid on; title(sprintf('Max Stress (Current: %.2f)', sigma_max)); 
         xlabel('Iteration'); ylabel('Max Stress');
-        xlim([0, max_iter]);
         
         drawnow; % Update the figure window
     end

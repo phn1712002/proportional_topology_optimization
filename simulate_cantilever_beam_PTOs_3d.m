@@ -32,7 +32,7 @@ alpha = 0.3;            % Move limit (history coefficient)
 sigma_allow = 0.35;     % Allowable von Mises stress
 tau = 0.05;             % Stress tolerance band
 coef_inc_dec = 0.05;    % Material increase/decrease coefficient
-max_iter = 50;          % Maximum iterations
+max_iter = 500;          % Maximum iterations
 conv_tol = 1e-3;        % Convergence tolerance
 
 % Initial target material amount (start with full design domain)
