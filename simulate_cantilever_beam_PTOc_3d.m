@@ -41,9 +41,9 @@ rho_min = 1e-3;
 rho_max = 1.0;
 
 % Element size (assumed unit cube elements)
-dx = 10;
-dy = 10;
-dz = 10;
+dx = 1;
+dy = 1;
+dz = 1;
 
 % Visualization settings
 plot_flag = true;

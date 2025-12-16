@@ -15,9 +15,9 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, designer_mask] = c
     end
 
     % Problem parameters - REDUCED for a fast simulation
-    nelx = 12;                 % Number of elements in x-direction (length)
-    nely = 6;                  % Number of elements in y-direction (height)
-    nelz = 4;                  % Number of elements in z-direction (thickness)
+    nelx = 12*2;                 % Number of elements in x-direction (length)
+    nely = 6*2;                  % Number of elements in y-direction (height)
+    nelz = 4*2;                  % Number of elements in z-direction (thickness)
     load_val = -1;             % Total downward load
 
     % Load area is now smaller and proportional to the mesh

@@ -29,9 +29,9 @@ nu = 0.3;       % Poisson's ratio
 q = 2.0;                % Stress exponent for material distribution
 r_min = 1.5;            % Filter radius (in element units)
 alpha = 0.3;            % Move limit (history coefficient)
-sigma_allow = 0.35;     % Allowable von Mises stress
+sigma_allow = 0.1;     % Allowable von Mises stress
 tau = 0.05;             % Stress tolerance band
-coef_inc_dec = 0.05;    % Material increase/decrease coefficient
+coef_inc_dec = 0.1;    % Material increase/decrease coefficient
 max_iter = 500;          % Maximum iterations
 conv_tol = 1e-3;        % Convergence tolerance
 
