@@ -32,7 +32,7 @@ ndof = 2 * (nelx + 1) * (nely + 1);
 [Ke, ~] = element_stiffness_matrix(E0, nu);
 
 % Assembly
-K_global = assemble_global_stiffness(nelx, nely, rho, p, E0, E_min, ndof);
+K_global = assemble_global_stiffness(nelx, nely, rho, p, E0, E_min, Ke, ndof);
 
 % Apply boundary conditions (remove fixed DOFs)
 free_dofs = setdiff(1:ndof, fixed_dofs);

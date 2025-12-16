@@ -1,4 +1,4 @@
-function K_global = assemble_global_stiffness(nelx, nely, rho, p, E0, E_min, ndof)
+function K_global = assemble_global_stiffness(nelx, nely, rho, p, E0, E_min, Ke, ndof)
     % Initialize global stiffness matrix
     K_global = sparse(ndof, ndof);
 
