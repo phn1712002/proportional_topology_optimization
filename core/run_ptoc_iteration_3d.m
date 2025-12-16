@@ -140,7 +140,7 @@ for iter = 1:max_iter
             % Use scatter3 to plot points
             scatter3(x_vec(mask), y_vec(mask), z_vec(mask), 50, rho_vec(mask), 'filled');
             colorbar;
-            colormap(jet);
+            colormap(gray);
             caxis([rho_min, rho_max]);
             title(sprintf('3D Density (iter %d)', iter));
             xlabel('x'); ylabel('y'); zlabel('z');
