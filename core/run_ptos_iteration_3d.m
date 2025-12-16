@@ -140,65 +140,77 @@ for iter = 1:max_iter
     
     % 9. Plot intermediate results for 3D
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
+        
         figure(1);
-        clf;
-        set(gcf, 'WindowState', 'maximized');
+        clf; % Clear the current figure
+        set(gcf, 'WindowState', 'maximized', 'Name', sprintf('%s - Iteration %d', problem_name, iter));
+
+        % Subplot 1: 3D Scatter plot of density (using points)
+        subplot(2,3,[1,2,3]);
         
-        % Subplot 1: Density at middle slice
-        subplot(2,3,1);
-        mid_z = ceil(nelz/2);
-        imagesc(squeeze(rho_new(:,:,mid_z))); axis equal tight; colorbar; 
-        title(sprintf('Density at z=%d (iter %d)', mid_z, iter));
-        axis xy;
-        xlabel('x'); ylabel('y');
+        % Create coordinates for voxel centers
+        [X, Y, Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
         
-        % Subplot 2: Stress at middle slice
-        subplot(2,3,2);
-        imagesc(squeeze(sigma_vm(:,:,mid_z))); axis equal tight; colorbar; 
-        title(sprintf('Stress (max=%.2f)', sigma_max));
-        axis xy;
-        xlabel('x'); ylabel('y');
+        % Reshape density and coordinates to vectors
+        rho_vec = rho_new(:);
+        x_vec = X(:);
+        y_vec = Y(:);
+        z_vec = Z(:);
         
-        % Subplot 3: Compliance history
-        subplot(2,3,3);
-        plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5); 
-        grid on; title('Compliance'); xlabel('Iteration'); ylabel('Compliance');
+        % Apply threshold to reduce number of points (only show voxels with significant density)
+        threshold = rho_min;
+        mask = rho_vec > threshold;
         
-        % Subplot 4: Volume history
-        subplot(2,3,4);
-        plot(history.iteration, history.volume, 'r-*', 'LineWidth', 1.5); 
-        grid on; title('Volume'); xlabel('Iteration'); ylabel('Volume');
-        
-        % Subplot 5: Max stress history with allowable band
-        subplot(2,3,5);
-        plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5); 
-        grid on; title('Max Stress'); xlabel('Iteration'); ylabel('Max Stress');
-        yline(sigma_allow*(1-tau), 'r--', ''); 
-        yline(sigma_allow*(1+tau), 'r--', '');
-        yline(sigma_allow, 'k-', 'Allowable stress');
-        
-        % Subplot 6: 3D isosurface or density change
-        subplot(2,3,6);
-        if nelz > 1
-            % Create isosurface at density = 0.5
-            [X,Y,Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
-            patch_obj = patch(isosurface(X, Y, Z, rho_filtered, 0.5));
-            isonormals(X, Y, Z, rho_filtered, patch_obj);
-            patch_obj.FaceColor = 'red';
-            patch_obj.EdgeColor = 'none';
-            daspect([1 1 1]);
-            view(3); axis tight;
-            camlight; lighting gouraud;
-            title('3D Isosurface (density=0.5)');
+        if any(mask)
+            % Use scatter3 to plot points
+            scatter3(x_vec(mask), y_vec(mask), z_vec(mask), 50, rho_vec(mask), 'filled');
+            colorbar;
+            colormap(jet);
+            caxis([rho_min, rho_max]);
+            title(sprintf('3D Density (iter %d)', iter));
             xlabel('x'); ylabel('y'); zlabel('z');
+            axis equal;
+            grid on;
+            view(3); % 3D view
+            % Set axis limits
+            xlim([0.5, nelx+0.5]);
+            ylim([0.5, nely+0.5]);
+            zlim([0.5, nelz+0.5]);
         else
-            % 2D case (single layer) - show density change
-            semilogy(history.iteration, history.change, 'm-d', 'LineWidth', 1.5); 
-            grid on; title('Density Change (log)'); xlabel('Iteration'); ylabel('Max Change');
-            yline(conv_tol, '--', 'Tolerance');
+            % No points above threshold
+            text(0.5, 0.5, 0.5, 'No density above threshold', 'HorizontalAlignment', 'center');
+            title(sprintf('3D Density (iter %d)', iter));
+            xlabel('x'); ylabel('y'); zlabel('z');
+            axis equal;
+            grid on;
+            view(3);
         end
+
+        % Subplot 4: Compliance history
+        subplot(2,3,4);
+        plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5);
+        grid on; title('Compliance'); xlabel('Iteration'); ylabel('Compliance');
+        xlim([0, max_iter]);
+
+        % Subplot 5: Volume history
+        subplot(2,3,5);
+        plot(history.iteration, history.volume, 'r-*', 'LineWidth', 1.5);
+        grid on; title('Volume'); xlabel('Iteration'); ylabel('Volume');
+        xlim([0, max_iter]);
+
+        % Subplot 6: Max stress history with allowable band
+        subplot(2,3,6);
+        plot(history.iteration, history.sigma_max, 'g-s', 'LineWidth', 1.5);
+        hold on;
+        yline(sigma_allow * (1 - tau), 'r--', 'Lower Bound');
+        yline(sigma_allow * (1 + tau), 'r--', 'Upper Bound');
+        yline(sigma_allow, 'k-', 'Allowable');
+        hold off;
+        grid on; title(sprintf('Max Stress (Current: %.2f)', sigma_max)); 
+        xlabel('Iteration'); ylabel('Max Stress');
+        xlim([0, max_iter]);
         
-        drawnow;
+        drawnow; % Update the figure window
     end
     
     % Update density for next iteration

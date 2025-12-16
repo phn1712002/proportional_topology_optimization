@@ -1,7 +1,7 @@
-%% SIMULATE_MBB_BEAM_PTOC_3D Run 3D PTOc optimization on MBB beam problem
+%% SIMULATE_MBB_BEAM_PTOC_3D Run 3D PTOc optimization on Cantilever Beam problem
 %
 % This script demonstrates the 3D Proportional Topology Optimization for
-% compliance minimization (PTOc) on a 3D MBB beam problem.
+% compliance minimization (PTOc) on a 3D Cantilever Beam problem.
 
 clear; close all; clc;
 
@@ -9,9 +9,9 @@ clear; close all; clc;
 add_lib(pwd);
 
 %% 1. Problem Setup
-fprintf('=== 3D MBB Beam PTOc Optimization ===\n');
+fprintf('=== 3D Cantilever Beam PTOc Optimization ===\n');
 
-% Get boundary conditions for 3D MBB beam
+% Get boundary conditions for 3D Cantilever Beam
 [fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, design_mask] = cantilever_beam_boundary_3d(false);
 
 % Display problem information

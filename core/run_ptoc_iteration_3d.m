@@ -117,44 +117,61 @@ for iter = 1:max_iter
     % 7. Check convergence
     [converged, ~] = check_convergence(rho_new, rho, iter, max_iter, conv_tol, 'PTOc');
     
-    % 8. Plot intermediate results (simplified for 3D)
+    % 8. Plot intermediate results for 3D
     if plot_flag && (mod(iter, plot_frequency) == 0 || iter == 1 || converged)
-        figure(1);
-        clf;
-        set(gcf, 'WindowState', 'maximized');
         
-        % 3D visualization using stlPlot from lib/stlTools
-        subplot(2,2,1);
-        if nelz > 1
-            % Create isosurface at density = 0.5
-            [X,Y,Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
-            [faces, verts] = isosurface(X, Y, Z, rho_filtered, 0.5);
-            
-            % Scale vertices to physical dimensions
-            verts(:,1) = verts(:,1) * dx;
-            verts(:,2) = verts(:,2) * dy;
-            verts(:,3) = verts(:,3) * dz;
-            
-            % Use stlPlot to visualize the 3D model
-            stlPlot(verts, faces, sprintf('3D Model (iter %d)', iter));
+        % Subplot 1: 3D Scatter plot of density (using points)
+        subplot(2,3,[1,2,3]);
+        
+        % Create coordinates for voxel centers
+        [X, Y, Z] = meshgrid(1:nelx, 1:nely, 1:nelz);
+        
+        % Reshape density and coordinates to vectors
+        rho_vec = rho_new(:);
+        x_vec = X(:);
+        y_vec = Y(:);
+        z_vec = Z(:);
+        
+        % Apply threshold to reduce number of points (only show voxels with significant density)
+        threshold = rho_min;
+        mask = rho_vec > threshold;
+        
+        if any(mask)
+            % Use scatter3 to plot points
+            scatter3(x_vec(mask), y_vec(mask), z_vec(mask), 50, rho_vec(mask), 'filled');
+            colorbar;
+            colormap(jet);
+            caxis([rho_min, rho_max]);
+            title(sprintf('3D Density (iter %d)', iter));
+            xlabel('x'); ylabel('y'); zlabel('z');
+            axis equal;
+            grid on;
+            view(3); % 3D view
+            % Set axis limits
+            xlim([0.5, nelx+0.5]);
+            ylim([0.5, nely+0.5]);
+            zlim([0.5, nelz+0.5]);
         else
-            % 2D case (single layer)
-            imagesc(rho_filtered(:,:,1)); axis equal tight; colorbar;
-            title('Filtered Density');
-            axis xy;
-            xlabel('x'); ylabel('y');
+            % No points above threshold
+            text(0.5, 0.5, 0.5, 'No density above threshold', 'HorizontalAlignment', 'center');
+            title(sprintf('3D Density (iter %d)', iter));
+            xlabel('x'); ylabel('y'); zlabel('z');
+            axis equal;
+            grid on;
+            view(3);
         end
-        
-        subplot(2,2,2);
+
+        % --- History Plots (moved to the bottom row) ---
+        subplot(2,3,4);
         plot(history.iteration, history.compliance, 'b-o', 'LineWidth', 1.5); 
         grid on; title('Total Compliance'); xlabel('Iteration'); ylabel('Compliance');
         
-        subplot(2,2,3);
+        subplot(2,3,5);
         plot(history.iteration, history.volume, 'r-*', 'LineWidth', 1.5); 
         grid on; title('Volume'); xlabel('Iteration'); ylabel('Volume');
         yline(TM, 'k--', 'Target Volume');
         
-        subplot(2,2,4);
+        subplot(2,3,6);
         semilogy(history.iteration, history.change, 'm-d', 'LineWidth', 1.5); 
         grid on; title('Density Change (log)'); xlabel('Iteration'); ylabel('Max Change');
         yline(1e-3, '--', 'Tolerance');
