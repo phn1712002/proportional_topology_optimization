@@ -95,3 +95,4 @@ save(results_file, 'rho_opt', 'history', 'converged', 'iter', 'nelx', 'nely', 'n
     'volume_fraction', 'TM', 'p', 'E0', 'nu', 'q', 'r_min', 'alpha', 'elapsed_time');
 
 fprintf('Results saved to: %s\n', results_file);
+
