@@ -1,9 +1,3 @@
-% SIMULATE_LBRACKET_PTOS Run PTOs on L-bracket problem
-%
-%   This script sets up the L-bracket and runs the stress-constrained PTO algorithm.
-%
-%   Results are saved to 'Lbracket_PTOs_results.mat' and figures are generated.
-
 % Clear all
 clear; close all; clc;
 
@@ -11,7 +5,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== L-bracket - PTOs (Stress-constrained) ===\n');
+fprintf('PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -38,7 +32,7 @@ rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_bracket_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = distributed_load_example(false); % Select the desired load model.
 
 % Create initial density
 % Start with uniform density at target volume fraction
@@ -54,19 +48,19 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, 'L-bracket');
+                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, 'Stress-constrained');
 
 % Save results
-save('Lbracket_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'designer_mask');
+save('simulate_PTOs.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau', 'designer_mask');
 
 % Save figure
-saveas(gcf, 'Lbracket_PTOs_results.png');
+saveas(gcf, 'simulate_PTOs.png');
 
 fprintf('\n=== Simulation Complete ===\n');
 fprintf('Final volume fraction: %.4f\n', sum(rho_opt(:))/(nelx*nely));
 fprintf('Final max stress: %.4f\n', max(sigma_vm(:)));
 fprintf('Final compliance: %.4f\n', history.compliance(end));
-fprintf('Results saved to Lbracket_PTOs_results.mat and Lbracket_PTOs_results.png\n');
+fprintf('Results saved to simulate_PTOs.mat and simulate_PTOs.png\n');
 
 % Display summary
 fprintf('\n=== Problem Summary ===\n');

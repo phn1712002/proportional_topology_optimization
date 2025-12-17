@@ -1,10 +1,3 @@
-% SIMULATE_LBRACKET_PTOC Run PTOc on L-bracket problem
-%
-%   This script sets up the L-bracket and runs the compliance minimization PTO algorithm.
-%   Uses the modular run_ptoc_iteration function for the main optimization loop.
-%
-%   Results are saved to 'Lbracket_PTOc_results.mat' and figures are generated.
-
 % Clear all
 clear; close all; clc;
 
@@ -12,7 +5,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== L-bracket - PTOc (Compliance minimization) ===\n');
+fprintf('=== PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -37,7 +30,7 @@ rho_min = 1e-9;
 rho_max = 1.0;
 
 % Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = l_bracket_boundary(false);
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = distributed_load_example(false); % Select the desired load model.
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Create initial density with cutout (void region)
@@ -58,7 +51,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, conv_tol, designer_mask, 'L-Bracket');
+    rho_min, rho_max, conv_tol, designer_mask, 'Compliance minimization');
 
 % Compute final metrics
 final_compliance = history.compliance(end);
@@ -67,14 +60,14 @@ final_volume_fraction = final_volume / active_area;  % Volume fraction relative 
 total_volume_fraction = final_volume / total_area;   % Volume fraction relative to total domain
 
 % Save results (save the final optimized density, not intermediate rho_opt)
-save('Lbracket_PTOc_results.mat', 'rho_opt', 'history', 'nelx', 'nely', ...
+save('simulate_PTOc.mat', 'rho_opt', 'history', 'nelx', 'nely', ...
     'p', 'q', 'r_min', 'alpha', 'volume_fraction', 'designer_mask', ...
     'final_compliance', 'final_volume', 'final_volume_fraction', 'total_volume_fraction', ...
     'converged', 'final_iter');
 
 % Save figure
 if plot_flag
-    saveas(gcf, 'Lbracket_PTOc_results.png');
+    saveas(gcf, 'simulate_PTOc.png');
 end
 
 fprintf('\n=== Simulation Complete ===\n');
@@ -83,13 +76,13 @@ fprintf('Final compliance: %.4f\n', final_compliance);
 fprintf('Final volume: %.2f (target: %.2f)\n', final_volume, TM);
 fprintf('Final volume fraction (active area): %.4f (target: %.2f)\n', final_volume_fraction, volume_fraction);
 fprintf('Final volume fraction (total domain): %.4f\n', total_volume_fraction);
-fprintf('Results saved to Lbracket_PTOc_results.mat and Lbracket_PTOc_results.png\n');
+fprintf('Results saved to simulate_PTOc.mat and simulate_PTOc.png\n');
 
 % Display final design
 figure(2);
 clf;
 imagesc(rho_opt); axis equal tight; colorbar;
-title(sprintf('L-Bracket PTOc Final Design (Iteration %d)', final_iter));
+title(sprintf('PTOc Final Design (Iteration %d)', final_iter));
 axis xy;
 xlabel('x'); ylabel('y');
 colormap(gray);
