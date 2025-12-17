@@ -23,18 +23,18 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, designer_mask] = l
     end
 
     % --- PROBLEM CONFIGURATION ---
-    % Using moderate mesh size for 3D L-bracket (similar to 2D but with thickness)
-    nelx = 30;                 % Number of elements in x-direction (width)
-    nely = 30;                 % Number of elements in y-direction (height)
-    nelz = 6;                  % Number of elements in z-direction (thickness)
+    % Using a coarser mesh for faster simulation
+    nelx = 20;                 % Number of elements in x-direction (was 30)
+    nely = 20;                 % Number of elements in y-direction (was 30)
+    nelz = 4;                  % Number of elements in z-direction (was 6)
     
-    % Cutout dimensions (similar to 2D version but scaled down for 3D)
-    CUTOUT_X = 18;            % Width of the top-right cutout in elements
-    CUTOUT_Y = 18;            % Height of the top-right cutout in elements
+    % Cutout dimensions (scaled down proportionally with the mesh)
+    CUTOUT_X = 12;             % Width of the top-right cutout (was 18)
+    CUTOUT_Y = 12;             % Height of the top-right cutout (was 18)
     
     % Load configuration
-    load_val = -1;            % Total downward load (negative y-direction)
-    load_area_z = 3;          % Load distributed over thickness of Z elements
+    load_val = -1;             % Total downward load (negative y-direction)
+    load_area_z = 2;           % Load distributed over thickness of Z elements (was 3)
 
     % Node grid dimensions
     num_nodes_x = nelx + 1;
@@ -42,58 +42,34 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, designer_mask] = l
     num_nodes_z = nelz + 1;
 
     % --- DEFINE DESIGN DOMAIN (3D L-BRACKET) ---
-    % Create a 3D mask where 'true' is the design area and 'false' is the void area.
-    % The L-bracket shape is extruded in the z-direction.
     designer_mask = true(nely, nelx, nelz);
-    
-    % Apply cutout to all layers in z-direction
     void_rows = (nely - CUTOUT_Y + 1):nely;
     void_cols = (nelx - CUTOUT_X + 1):nelx;
-    
-    for z = 1:nelz
-        designer_mask(void_rows, void_cols, z) = false;
-    end
+    designer_mask(void_rows, void_cols, :) = false;
 
     % --- NODE AND DOF NUMBERING CONVENTION (3D) ---
-    % The mesh contains (nelx+1) x (nely+1) x (nelz+1) nodes.
-    % Nodes are numbered with z varying fastest, then y, then x.
-    % Node ID formula: node_id = (k-1)*(ny+1)*(nx+1) + (j-1)*(ny+1) + i
-    % where i = y-index (1 to ny+1), j = x-index (1 to nx+1), k = z-index (1 to nz+1)
-    % Degrees of freedom for node 'n': 3*n-2 (x), 3*n-1 (y), 3*n (z)
+    % ... (No changes here)
 
     % --- FIXED DOFs ---
-    % Fixed boundary: The top edge of the vertical arm (similar to 2D but extended in z)
-    % The vertical arm has a width of (nelx - CUTOUT_X) elements.
     fixed_width_in_elements = nelx - CUTOUT_X;
-    
-    % Create grid of fixed nodes on the top edge for all z-layers
     fixed_nodes = [];
-    
     for z_idx = 1:num_nodes_z
-        % Node columns for the fixed edge (x-direction)
         for x_idx = 1:(fixed_width_in_elements + 1)
-            % Node is at top edge (y = nely + 1)
             y_idx = num_nodes_y;
-            
-            % Calculate node ID
             node_id = (z_idx-1)*(num_nodes_y*num_nodes_x) + (x_idx-1)*num_nodes_y + y_idx;
             fixed_nodes = [fixed_nodes; node_id];
         end
     end
-    
-    % Get all three DOFs (Ux, Uy, Uz) for each fixed node
     dof_x = 3 * fixed_nodes - 2;
     dof_y = 3 * fixed_nodes - 1;
     dof_z = 3 * fixed_nodes;
-    
     fixed_dofs = sort([dof_x; dof_y; dof_z]);
 
     % --- LOAD APPLICATION ---
-    % Load is applied at the outer-most edge of the horizontal arm (x = nelx + 1)
-    % Distributed over the thickness (z-direction) and centered in y
+    % Load is applied at the outer-most edge of the horizontal arm
     
-    % Center of the load in y-direction (at the corner of the horizontal arm)
-    load_center_y = (nely - CUTOUT_Y) + 1;
+    % CORRECTED: Center of the load in y-direction (middle of the horizontal arm's free edge)
+    load_center_y = floor((nely - CUTOUT_Y) / 2) + 1;
     
     % Define load distribution in z-direction (centered)
     mid_z = floor(num_nodes_z / 2) + 1;
@@ -102,28 +78,19 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, designer_mask] = l
     
     % Create grid of load nodes
     load_nodes = [];
-    
     for z_idx = load_nodes_z
-        % Load is applied at the rightmost edge (x = num_nodes_x)
-        x_idx = num_nodes_x;
-        
-        % Apply load at 3 points in y-direction (similar to 2D)
+        x_idx = num_nodes_x; % Rightmost edge
         for y_offset = -1:1
             y_idx = load_center_y + y_offset;
-            
-            % Check if y_idx is within bounds
             if y_idx >= 1 && y_idx <= num_nodes_y
-                % Calculate node ID
                 node_id = (z_idx-1)*(num_nodes_y*num_nodes_x) + (x_idx-1)*num_nodes_y + y_idx;
                 load_nodes = [load_nodes; node_id];
             end
         end
     end
     
-    % The load is applied in the y-direction (vertical, downward)
     load_dofs = 3 * load_nodes - 1;
     
-    % Distribute the total load evenly among all loaded DOFs
     num_load_points = length(load_dofs);
     if num_load_points == 0
         error('Load application error: No nodes found for the specified load area. Check dimensions.');
