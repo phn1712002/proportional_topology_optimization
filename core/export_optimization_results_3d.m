@@ -9,7 +9,7 @@ function export_optimization_results_3d(rho_opt, problem_name, varargin)
 %
 % Inputs:
 %   rho_opt     - Final 3D density field (nely x nelx x nelz)
-%   problem_name - Name of the problem (e.g., 'cantilever_beam')
+%   problem_name - Name of the problem (e.g., 'plate')
 %
 % Optional Parameters (name-value pairs):
 %   'output_dir'    - Output directory (default: 'results/stl')
@@ -25,14 +25,14 @@ function export_optimization_results_3d(rho_opt, problem_name, varargin)
 %
 % Example:
 %   % Basic usage
-%   filename = export_optimization_results_3d(rho_opt, 'cantilever_beam');
+%   filename = export_optimization_results_3d(rho_opt, 'plate');
 %
 %   % With custom parameters
 %   filename = export_optimization_results_3d(rho_opt, 'mbb_beam', ...
 %       'output_dir', 'exports', 'isovalue', 0.3, 'mode', 'ascii');
 %
 %   % From simulation script
-%   export_optimization_results_3d(rho_opt, '3D Cantilever Beam', ...
+%   export_optimization_results_3d(rho_opt, '3D Plate', ...
 %       'volume_fraction', 0.3, 'dx', 1, 'dy', 1, 'dz', 1);
 %
 % Note:

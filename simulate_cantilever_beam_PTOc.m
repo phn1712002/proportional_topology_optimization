@@ -12,7 +12,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== Cantilever Beam - PTOc (Compliance minimization) ===\n');
+fprintf('=== 3D Plate - PTOc (Compliance minimization) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -57,7 +57,7 @@ rho = rho_init;
     load_dofs, load_vals, fixed_dofs, ...
     q, r_min, alpha, max_iter, ...
     plot_flag, plot_frequency, dx, dy, ...
-    rho_min, rho_max, conv_tol, designer_mask, 'Cantilever Beam');
+    rho_min, rho_max, conv_tol, designer_mask, '3D Plate');
 
 % Compute final metrics
 final_compliance = history.compliance(end);
@@ -86,7 +86,7 @@ fprintf('Results saved to cantilever_beam_PTOc_results.mat and cantilever_beam_P
 figure(2);
 clf;
 imagesc(rho_opt); axis equal tight; colorbar;
-title(sprintf('Cantilever Beam PTOc Final Design (Iteration %d)', final_iter));
+title(sprintf('3D Plate PTOc Final Design (Iteration %d)', final_iter));
 axis xy;
 xlabel('x'); ylabel('y');
 colormap(gray);

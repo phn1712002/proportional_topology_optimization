@@ -1,7 +1,7 @@
-%% SIMULATE_MBB_BEAM_PTOC_3D Run 3D PTOc optimization on Cantilever Beam problem
+%% SIMULATE_PLATE_3D_PTOC Run 3D PTOc optimization on 3D Plate problem
 %
 % This script demonstrates the 3D Proportional Topology Optimization for
-% compliance minimization (PTOc) on a 3D Cantilever Beam problem.
+% compliance minimization (PTOc) on a 3D Plate problem.
 
 clear; close all; clc;
 
@@ -9,10 +9,10 @@ clear; close all; clc;
 add_lib(pwd);
 
 %% 1. Problem Setup
-fprintf('=== 3D Cantilever Beam PTOc Optimization ===\n');
+fprintf('=== 3D Plate PTOc Optimization ===\n');
 
-% Get boundary conditions for 3D Cantilever Beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, design_mask] = cantilever_beam_boundary_3d(false);
+% Get boundary conditions for 3D Plate
+[fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, design_mask] = plate_3d_boundary(false);
 
 % Display problem information
 fprintf('Mesh dimensions: %d x %d x %d elements\n', nelx, nely, nelz);
@@ -50,7 +50,7 @@ plot_flag = true;
 plot_frequency = 5;
 
 % Problem name for display
-problem_name = '3D Cantilever Beam';
+problem_name = '3D Plate';
 
 %% 3. Initial Density Field
 % Uniform initial density matching volume fraction
@@ -90,7 +90,7 @@ if ~exist('results', 'dir')
 end
 
 % Save optimization results
-results_file = sprintf('results/cantilever_beam_ptoc_3d_%dx%dx%d_%.2fvol.mat', nelx, nely, nelz, volume_fraction);
+results_file = sprintf('results/plate_ptoc_3d_%dx%dx%d_%.2fvol.mat', nelx, nely, nelz, volume_fraction);
 save(results_file, 'rho_opt', 'history', 'converged', 'iter', 'nelx', 'nely', 'nelz', ...
     'volume_fraction', 'TM', 'p', 'E0', 'nu', 'q', 'r_min', 'alpha', 'elapsed_time');
 

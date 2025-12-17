@@ -17,7 +17,7 @@ function export_density_to_stl_3d(filename, rho, dx, dy, dz, isovalue, mode, tit
 %
 % Example:
 %   % Export final density from optimization
-%   export_density_to_stl_3d('cantilever_3d.stl', rho_opt, 1, 1, 1, 0.5, 'binary', '3D Cantilever Beam');
+%   export_density_to_stl_3d('cantilever_3d.stl', rho_opt, 1, 1, 1, 0.5, 'binary', '3D Plate');
 %
 %   % Export with custom element sizes
 %   export_density_to_stl_3d('result.stl', rho, 0.5, 0.5, 1.0, 0.3, 'ascii');

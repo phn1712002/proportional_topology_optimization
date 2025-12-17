@@ -1,7 +1,7 @@
-%% SIMULATE_CANTILEVER_BEAM_PTOS_3D Run 3D PTOs optimization on cantilever beam problem
+%% SIMULATE_PLATE_3D_PTOS Run 3D PTOs optimization on cantilever beam problem
 %
 % This script demonstrates the 3D Proportional Topology Optimization for
-% stress-constrained minimization (PTOs) on a 3D cantilever beam problem.
+% stress-constrained minimization (PTOs) on a Plate 3D problem.
 
 clear; close all; clc;
 
@@ -9,10 +9,10 @@ clear; close all; clc;
 add_lib(pwd);
 
 %% 1. Problem Setup
-fprintf('=== 3D Cantilever Beam PTOs Optimization ===\n');
+fprintf('=== 3D Plate PTOs Optimization ===\n');
 
-% Get boundary conditions for 3D cantilever beam
-[fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, design_mask] = cantilever_beam_boundary_3d(false);
+% Get boundary conditions for Plate 3D
+[fixed_dofs, load_dofs, load_vals, nelx, nely, nelz, design_mask] = plate_3d_boundary(false);
 
 % Display problem information
 fprintf('Mesh dimensions: %d x %d x %d elements\n', nelx, nely, nelz);
@@ -52,7 +52,7 @@ plot_flag = true;
 plot_frequency = 5;
 
 % Problem name for display
-problem_name = '3D Cantilever Beam';
+problem_name = '3D Plate';
 
 %% 3. Initial Density Field
 % Uniform initial density (full material)
@@ -84,7 +84,7 @@ if ~exist('results', 'dir')
 end
 
 % Save optimization results
-results_file = sprintf('results/cantilever_beam_ptos_3d_%dx%dx%d_%.2fstress.mat', nelx, nely, nelz, sigma_allow);
+results_file = sprintf('results/plate_ptos_3d_%dx%dx%d_%.2fstress.mat', nelx, nely, nelz, sigma_allow);
 save(results_file, 'rho_opt', 'history', 'sigma_vm', 'sigma_max', 'converged', 'iter', 'nelx', 'nely', 'nelz', ...
     'sigma_allow', 'tau', 'p', 'E0', 'nu', 'q', 'r_min', 'alpha', 'coef_inc_dec', 'elapsed_time');
 

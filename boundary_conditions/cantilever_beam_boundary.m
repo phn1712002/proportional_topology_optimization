@@ -71,13 +71,13 @@ function [fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantile
     load_vals = (LOAD_VAL) * ones(1, num_load_nodes);
     
     % --- DISPLAY & VISUALIZATION ---
-    fprintf('--- Cantilever Beam Configuration ---\n');
+    fprintf('--- 3D Plate Configuration ---\n');
     fprintf('Mesh: %d x %d elements\n', nelx, nely);
     fprintf('Fixed DOFs count: %d\n', length(fixed_dofs));
     fprintf('Total load magnitude: %.2f\n', sum(load_vals));
     
     % Visualize boundary conditions if requested
     if plot_flag
-        visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, 'Cantilever Beam', designer_mask);
+        visualize_boundary_conditions(nelx, nely, fixed_dofs, load_dofs, load_vals, '3D Plate', designer_mask);
     end
 end

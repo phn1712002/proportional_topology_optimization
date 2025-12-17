@@ -12,7 +12,7 @@ clear; close all; clc;
 add_lib(pwd);
 
 % Main
-fprintf('=== Cantilever Beam - PTOs (Stress-constrained) ===\n');
+fprintf('=== 3D Plate - PTOs (Stress-constrained) ===\n');
 
 % Mesh parameters
 dx = 1; dy = 1;  % Element size
@@ -56,7 +56,7 @@ rho = rho_init;
                        load_dofs, load_vals, fixed_dofs, ...
                        q, r_min, alpha, sigma_allow, tau, max_iter, ...
                        plot_flag, plot_frequency, dx, dy, ...
-                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, 'Cantilever Beam');
+                       rho_min, rho_max, coef_inc_dec, conv_tol, designer_mask, '3D Plate');
 
 % Save results
 save('cantilever_beam_PTOs_results.mat', 'rho_opt', 'history', 'nelx', 'nely', 'p', 'q', 'r_min', 'alpha', 'sigma_allow', 'tau');
