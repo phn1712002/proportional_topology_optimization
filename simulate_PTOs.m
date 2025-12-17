@@ -31,8 +31,8 @@ plot_frequency = 2;     % Frequency new plot
 rho_min = 1e-9;
 rho_max = 1.0;
 
-% Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = distributed_load_example(false); % Select the desired load model.
+% Boundary conditions
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = simply_supported_beam_boundary(false); % Select the desired load model.
 
 % Create initial density
 % Start with uniform density at target volume fraction

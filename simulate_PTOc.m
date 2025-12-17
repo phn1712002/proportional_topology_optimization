@@ -17,11 +17,11 @@ p = 3;           % SIMP penalty exponent
 
 % PTOc parameters
 q = 2.0;                % Compliance exponent for material distribution
-r_min = 1.25;            % Filter radius (in element units)
+r_min = 1.25;           % Filter radius (in element units)
 alpha = 0.5;            % Move limit
 volume_fraction = 0.4;  % Target volume fraction (adjusted for cutout)
 max_iter = 300;         % Maximum iterations
-conv_tol = 1e-4; % Convergence error
+conv_tol = 1e-4;        % Convergence error
 plot_flag = true;       % Show plots
 plot_frequency = 2;     % Frequency of new plots
 
@@ -29,8 +29,8 @@ plot_frequency = 2;     % Frequency of new plots
 rho_min = 1e-9;
 rho_max = 1.0;
 
-% Boundary conditions for L-bracket
-[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = distributed_load_example(false); % Select the desired load model.
+% Boundary conditions
+[fixed_dofs, load_dofs, load_vals, nelx, nely, designer_mask] = cantilever_distributed_load_boundary(false); % Select the desired load model.
 fprintf('Target volume fraction: %.2f\n', volume_fraction);
 
 % Create initial density with cutout (void region)
